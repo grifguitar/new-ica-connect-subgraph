@@ -111,15 +111,15 @@ public class DrawAPI extends Application {
             }
             return res;
         }
-    }
 
-    private static void saveToFile(Scene scene, String path) {
-        WritableImage image = scene.snapshot(null);
-        File file = new File(path);
-        try {
-            ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        private static void saveToFile(Scene scene, String path) {
+            WritableImage image = scene.snapshot(null);
+            File file = new File(path);
+            try {
+                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

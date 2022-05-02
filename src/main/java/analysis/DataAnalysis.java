@@ -9,10 +9,21 @@ import java.util.Arrays;
 
 import static utils.Matrix.scalProd;
 
+/**
+ * static class
+ */
 public class DataAnalysis {
+
+    /**
+     * private constants
+     */
     private static final double EPS = 1e-6;
     private static final String F_DEBUG = "./logs/data_analysis_debug.txt";
     private static final String F_OUT = "./logs/data_analysis_out.txt";
+
+    /**
+     * public static methods
+     */
 
     public static Matrix whitening(Matrix matrix) {
         try {

@@ -6,6 +6,9 @@ import utils.Pair;
 
 import java.util.*;
 
+/**
+ * static class
+ */
 public class ROC {
     private static boolean eq(Double x, Double y) {
         if (x == null || y == null) {
