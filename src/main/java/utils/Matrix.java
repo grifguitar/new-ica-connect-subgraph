@@ -56,10 +56,6 @@ public class Matrix {
         return new Matrix(res);
     }
 
-    public Matrix inv() {
-        return new Matrix(MatrixUtils.inverse(toApacheMatrix()));
-    }
-
     public Pair<double[], double[][]> decomposition(PrintWriter err) {
         if (numRows() != numCols()) {
             throw new RuntimeException("expected square matrix!");
