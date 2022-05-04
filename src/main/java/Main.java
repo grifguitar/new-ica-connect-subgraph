@@ -3,6 +3,7 @@ import drawing.DrawUtils;
 import graph.Graph;
 import io.GraphIO;
 import io.NewMatrixIO;
+import solver.SimpleCallbackSolver;
 import solver.SimpleSolver;
 import utils.Matrix;
 import utils.Pair;
@@ -71,7 +72,7 @@ public class Main {
 
             // solve
 
-            SimpleSolver solver = new SimpleSolver(matrix);
+            SimpleCallbackSolver solver = new SimpleCallbackSolver(matrix);
 
             if (solver.solve()) {
                 try (PrintWriter out = new PrintWriter(OUT)) {

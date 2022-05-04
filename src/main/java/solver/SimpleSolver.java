@@ -37,6 +37,8 @@ public class SimpleSolver {
 
     private final IloCplex cplex;
 
+    // constructor:
+
     public SimpleSolver(Matrix matrix) throws IloException {
         this.matrix = matrix;
         this.N = matrix.numRows();
@@ -52,6 +54,8 @@ public class SimpleSolver {
         addObjective();
         addConstraint();
     }
+
+    // private methods:
 
     private void addVariables() throws IloException {
         for (int i = 0; i < D; i++) {
@@ -82,6 +86,8 @@ public class SimpleSolver {
         cplex.addEq(cplex.sum(l1normP), L1NORM);
     }
 
+    // public methods:
+
     public boolean solve() throws IloException {
         return cplex.solve();
     }
@@ -97,6 +103,8 @@ public class SimpleSolver {
             out.println(p0);
         }
     }
+
+    // private static methods:
 
     private static String varNameOf(String arg1, int arg2) {
         return arg1 + arg2;
