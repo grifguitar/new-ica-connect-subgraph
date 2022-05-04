@@ -82,6 +82,8 @@ public class Main {
                 System.out.println("debug: results not found!");
             }
 
+            solver.close();
+
             // draw all from folder
 
             DrawUtils.drawingAnswer("./answers/", "total_answer");

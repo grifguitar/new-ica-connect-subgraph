@@ -4,10 +4,18 @@ import ilog.concert.*;
 import ilog.cplex.*;
 import utils.Matrix;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class SimpleCallbackSolver {
+public class SimpleCallbackSolver implements Closeable {
+    @Override
+    public void close() {
+        log.close();
+    }
 
     // data class:
 
@@ -35,6 +43,8 @@ public class SimpleCallbackSolver {
 
     // variables:
 
+    private final PrintWriter log;
+
     private final Matrix matrix;
     private final int D;
     private final int N;
@@ -43,9 +53,13 @@ public class SimpleCallbackSolver {
 
     private final IloCplex cplex;
 
+    private final AtomicReference<Double> lb;
+
     // constructor:
 
-    public SimpleCallbackSolver(Matrix matrix) throws IloException {
+    public SimpleCallbackSolver(Matrix matrix) throws IloException, IOException {
+        this.log = new PrintWriter("./logs/simple_callback_solver.txt", StandardCharsets.UTF_8);
+
         this.matrix = matrix;
         this.N = matrix.numRows();
         this.D = matrix.numCols();
@@ -55,6 +69,8 @@ public class SimpleCallbackSolver {
         this.cplex = new IloCplex();
         this.cplex.setParam(IloCplex.Param.OptimalityTarget, IloCplex.OptimalityTarget.OptimalGlobal);
         this.cplex.setParam(IloCplex.Param.TimeLimit, TIME_LIMIT);
+
+        this.lb = new AtomicReference<>(-1e5);
 
         addVariables();
         addObjective();
@@ -117,7 +133,6 @@ public class SimpleCallbackSolver {
     }
 
     private void tuning() throws IloException {
-        //cplex.use(new MIPCallback());
         cplex.use(new ICACallback());
     }
 
@@ -132,6 +147,8 @@ public class SimpleCallbackSolver {
             double[] alpha,
             double[] beta
     ) {
+        private static final double eps = 1e-6;
+
         public boolean adapt() {
             double[] p = mul(matrix, a);
 
@@ -141,7 +158,10 @@ public class SimpleCallbackSolver {
                 return false;
             }
 
-            double cff = L1NORM / l1norm;
+            double cff = 1;
+            if (Math.abs(l1norm - L1NORM) > eps) {
+                cff = L1NORM / l1norm;
+            }
 
             for (int i = 0; i < a.length; i++) {
                 a[i] *= cff;
@@ -163,7 +183,7 @@ public class SimpleCallbackSolver {
                 }
             }
 
-            if (Math.abs(calcL1Norm(new_p) - L1NORM) > 1e-6) {
+            if (Math.abs(calcL1Norm(new_p) - L1NORM) > eps) {
                 throw new RuntimeException("unexpected l1norm after adapt");
             }
 
@@ -192,6 +212,19 @@ public class SimpleCallbackSolver {
             for (double x : beta) ans[ind_ans++] = x;
             return ans;
         }
+
+        @Override
+        public String toString() {
+            return "RawSolution{" +
+                    "\n| l1norm = " + calcL1Norm(mul(matrix, a)) +
+                    "\n| obj = " + calcObjective(this) +
+                    "\n| a = " + Arrays.toString(a) +
+                    "\n| f = " + Arrays.toString(f) +
+                    "\n| g = " + Arrays.toString(g) +
+                    "\n| alpha = " + Arrays.toString(alpha) +
+                    "\n| beta = " + Arrays.toString(beta) +
+                    "\n}";
+        }
     }
 
     private class ICACallback extends IloCplex.HeuristicCallback {
@@ -215,12 +248,23 @@ public class SimpleCallbackSolver {
                     this.getValues(toArray(v.beta))
             );
 
+            String oldStr = sol.toString();
+
             if (sol.adapt()) {
+
+                String newStr = sol.toString();
 
                 double calcObj = calcObjective(sol);
 
+                if (calcObj > lb.get()) {
+                    lb.set(calcObj);
+                    log.println("before: " + oldStr);
+                    log.println("after: " + newStr);
+                    log.println();
+                }
+
                 if (calcObj >= getIncumbentObjValue()) {
-                    System.out.println("found new solution: " + calcObj);
+                    //System.out.println("found new solution: " + calcObj);
                     setSolution(sol.vars(), sol.getValues());
                 }
 
@@ -228,17 +272,6 @@ public class SimpleCallbackSolver {
         }
     }
 
-//    private class MIPCallback extends IloCplex.IncumbentCallback {
-//        @Override
-//        protected void main() throws IloException {
-//            double currLB = lb.get();
-//            if (currLB < getObjValue()) {
-//                if (lb.compareAndSet(currLB, getObjValue())) {
-//                    System.out.println("Found new solution: " + getObjValue());
-//                }
-//            }
-//        }
-//    }
 
     // public methods:
 
@@ -253,7 +286,7 @@ public class SimpleCallbackSolver {
         }
         for (int i = 0; i < N; i++) {
             //System.out.println(varNameOf("p", i) + " = " + cplex.getValue(var.P.get(i)));
-            double p0 = cplex.getValue(v.f.get(i)) - cplex.getValue(v.g.get(i));
+            double p0 = cplex.getValue(v.g.get(i)) - cplex.getValue(v.f.get(i));
             out.println(p0);
         }
     }
