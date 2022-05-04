@@ -18,6 +18,21 @@ public class Matrix {
         this.data = new double[][]{vec};
     }
 
+    public Matrix(List<List<Double>> data) {
+        if (data.isEmpty()) {
+            throw new RuntimeException("expected non-empty matrix argument");
+        }
+        this.data = new double[data.size()][data.get(0).size()];
+        for (int i = 0; i < data.size(); i++) {
+            if (data.get(i).size() != data.get(0).size()) {
+                throw new RuntimeException("wrong matrix argument, no rectangle");
+            }
+            for (int j = 0; j < data.get(0).size(); j++) {
+                this.data[i][j] = data.get(i).get(j);
+            }
+        }
+    }
+
     public Matrix(RealMatrix mtx) {
         this.data = mtx.getData();
     }
