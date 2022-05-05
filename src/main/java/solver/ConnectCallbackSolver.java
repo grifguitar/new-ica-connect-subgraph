@@ -1,6 +1,7 @@
 package solver;
 
 import algo.MST;
+import drawing.DrawUtils;
 import graph.Graph;
 import ilog.concert.*;
 import ilog.cplex.*;
@@ -12,7 +13,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class ConnectCallbackSolver implements Closeable {
     @Override
@@ -53,8 +53,8 @@ public class ConnectCallbackSolver implements Closeable {
     private final static float INF = 1000;
     private final static int TIME_LIMIT = 20;
     private final static int L1NORM = 250;
-    private final static double PHI = 0.1;
-    private final static double STEP = 0.0001;
+    private final static double PHI = 0.01;
+    private final static double STEP = 0.01;
 
     // variables:
 
@@ -71,7 +71,9 @@ public class ConnectCallbackSolver implements Closeable {
 
     private final IloCplex cplex;
 
-    private final AtomicReference<Double> lb;
+    //private final AtomicReference<Double> lb;
+
+    private int cnt_ans = 0;
 
     // constructor:
 
@@ -95,7 +97,7 @@ public class ConnectCallbackSolver implements Closeable {
         this.cplex.setParam(IloCplex.Param.OptimalityTarget, IloCplex.OptimalityTarget.OptimalGlobal);
         this.cplex.setParam(IloCplex.Param.TimeLimit, TIME_LIMIT);
 
-        this.lb = new AtomicReference<>(-1e10);
+        //this.lb = new AtomicReference<>(-1e10);
 
         addVariables();
         addObjective();
@@ -133,7 +135,7 @@ public class ConnectCallbackSolver implements Closeable {
         }
         IloNumExpr[] err = new IloNumExpr[N];
         for (int i = 0; i < err.length; i++) {
-            err[i] = cplex.prod(cplex.diff(v.f.get(i), v.q.get(i)), 1.0 / (double) N);
+            err[i] = cplex.diff(v.f.get(i), v.q.get(i));
             err[i] = cplex.prod(err[i], err[i]);
         }
         cplex.addMaximize(cplex.diff(cplex.sum(squares), cplex.sum(err)));
@@ -148,7 +150,7 @@ public class ConnectCallbackSolver implements Closeable {
         }
         double[] err = new double[sol.matrix.numRows()];
         for (int i = 0; i < err.length; i++) {
-            err[i] = (sol.f[i] - sol.q[i]) / (double) err.length;
+            err[i] = (sol.f[i] - sol.q[i]);
             err[i] = err[i] * err[i];
             sum -= err[i];
         }
@@ -287,54 +289,9 @@ public class ConnectCallbackSolver implements Closeable {
                 throw new RuntimeException("unexpected l1norm after adapt");
             }
 
-            return adaptGraph();
-        }
-
-        private boolean adaptGraph() {
-            MST.solve(graph, x, q, r);
-
-            double q_max = -1;
-            int root = -1;
-            for (int i = 0; i < q.length; i++) {
-                if (q[i] > q_max) {
-                    q_max = q[i];
-                    root = i;
-                }
-            }
-
-            int[] vis = new int[graph.getNodesCount()];
-
-            dfs(vis, root);
-
-            for (int i = 0; i < vis.length; i++) {
-                if (vis[i] != 2) throw new RuntimeException("fail check adapt mst solution, vertex: " + i);
-            }
+            MST.solve(graph, x, q, r, STEP);
 
             return true;
-        }
-
-        private void dfs(int[] vis, int v) {
-            vis[v] = 1;
-            for (Pair<Integer, Long> pair : graph.edgesOf(v)) {
-                int to = pair.first;
-                int num = pair.second.intValue();
-                if (x[num] == 1) {
-                    if (vis[to] == 0) {
-                        if (q[to] > q[v]) {
-                            throw new RuntimeException("incorrect order!");
-                        }
-                        dfs(vis, to);
-                        if (q[v] <= q[to]) {
-                            q[v] = q[to] + STEP;
-                        }
-                    } else if (vis[to] == 1) {
-                        throw new RuntimeException("find cycle!");
-                    } else if (vis[to] == 2) {
-                        throw new RuntimeException("unexpected edge in mst!");
-                    }
-                }
-            }
-            vis[v] = 2;
         }
 
         private static double calcL1Norm(double[] p) {
@@ -416,12 +373,28 @@ public class ConnectCallbackSolver implements Closeable {
 
                 double calcObj = calcObjective(sol);
 
-                if (calcObj > lb.get()) {
-                    lb.set(calcObj);
-                    log.println("before: " + oldStr);
-                    log.println("after: " + newStr);
-                    log.println();
+                //if (calcObj > lb.get()) {
+                //    lb.set(calcObj);
+                //}
+                log.println("before: " + oldStr);
+                log.println("after: " + newStr);
+                log.println();
+
+                try {
+                    try (PrintWriter output = new PrintWriter(
+                            "./answers/p.txt",
+                            StandardCharsets.UTF_8)
+                    ) {
+                        for (int i = 0; i < N; i++) {
+                            output.println(sol.q[i]);
+                        }
+                    }
+                    DrawUtils.drawingAnswer("./answers/", "tmp_ans" + cnt_ans++);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
+
+                //}
 
                 if (calcObj >= getIncumbentObjValue()) {
                     //System.out.println("found new solution: " + calcObj);

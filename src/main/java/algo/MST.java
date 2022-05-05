@@ -10,7 +10,8 @@ public class MST {
             Graph graph,
             double[] x,
             double[] q,
-            double[] r
+            double[] r,
+            double STEP
     ) {
         List<Pair<Double, Integer>> undirected_edges = new ArrayList<>();
 
@@ -28,7 +29,7 @@ public class MST {
 
             undirected_edges.add(
                     new Pair<>(
-                            Math.max(x[num], x[num + 1]),
+                            Math.max(x[num], x[back_num]),
                             num
                     )
             );
@@ -49,23 +50,21 @@ public class MST {
             }
         }
 
-        List<List<Integer>> g = new ArrayList<>();
-        List<List<Pair<Integer, Long>>> g_ext = new ArrayList<>();
+        List<List<Pair<Integer, Long>>> g = new ArrayList<>();
         for (int i = 0; i < graph.getNodesCount(); i++) {
             g.add(new ArrayList<>());
-            g_ext.add(new ArrayList<>());
         }
 
         for (Integer num : ans_edges) {
             Pair<Integer, Integer> edge = graph.getEdges().get(num);
-            g.get(edge.first).add(edge.second);
-            g.get(edge.second).add(edge.first);
-            g_ext.get(edge.first).add(new Pair<>(edge.second, (long) num));
-            g_ext.get(edge.second).add(new Pair<>(edge.first, (long) Graph.companionEdge(num)));
+            g.get(edge.first).add(new Pair<>(edge.second, (long) num));
+            g.get(edge.second).add(new Pair<>(edge.first, (long) Graph.companionEdge(num)));
         }
 
-        check_mst(g);
+        main_solve(g, x, q, r, STEP);
+    }
 
+    private static void main_solve(List<List<Pair<Integer, Long>>> g, double[] x, double[] q, double[] r, double STEP) {
         double q_max = -1;
         int root = -1;
         for (int i = 0; i < q.length; i++) {
@@ -75,52 +74,84 @@ public class MST {
             }
         }
 
-        heuristic_dfs(g, root, -1, q);
+        check_mst(g, q, root);
 
-        Arrays.fill(x, 0);
         Arrays.fill(r, 0);
-
         r[root] = 1;
 
-        check_ordered(g_ext, q, root, x);
+        Arrays.fill(x, 0);
+
+        check_mst_ordered(g, q, x, root, STEP, false);
+        //check_mst_ordered(g, q, x, root, STEP, true);
+        //check_mst_ordered(g, q, x, root, STEP, false);
     }
 
-    private static void heuristic_dfs(List<List<Integer>> g, int v, int parent, double[] q) {
-        for (int to : g.get(v)) {
-            if (to != parent) {
-                heuristic_dfs(g, to, v, q);
-                tuning(g, v, to, q);
-            }
+    private static void check_mst(List<List<Pair<Integer, Long>>> g, double[] q, int root) {
+        int[] vis = new int[g.size()];
+
+        check_dfs_mst(g, vis, q, root, -1);
+
+        for (int i = 0; i < vis.length; i++) {
+            if (vis[i] != 2) throw new RuntimeException("non-correct MST in vertex: " + i);
         }
     }
 
-    private static void tuning(List<List<Integer>> g, int new_root, int root, double[] q) {
+    private static void check_dfs_mst(List<List<Pair<Integer, Long>>> g, int[] vis, double[] q, int v, int parent) {
+        vis[v] = 1;
+        for (Pair<Integer, Long> pair : g.get(v)) {
+            int to = pair.first;
+            if (to != parent) {
+                if (vis[to] == 0) {
+                    check_dfs_mst(g, vis, q, to, v);
+                    tuning(g, q, to, v);
+                } else {
+                    throw new RuntimeException("unexpected!");
+                }
+            }
+        }
+        vis[v] = 2;
+    }
+
+    private static void tuning(List<List<Pair<Integer, Long>>> g, double[] q, int v, int parent) {
         List<Integer> changed = new ArrayList<>();
 
-        changed.add(new_root);
-        double total_sum = q[new_root];
+        changed.add(parent);
+        double total_sum = q[parent];
         int total_count = 1;
         double average = total_sum / (double) total_count;
 
-        TreeSet<MyData> st = new TreeSet<>();
-        st.add(new MyData(q[root], root, new_root));
+        TreeMap<Double, List<Pair<Integer, Integer>>> mp = new TreeMap<>();
 
-        while (!st.isEmpty()) {
-            MyData elem = st.pollLast();
-            assert elem != null;
-            if (average < elem.key) {
-                for (int w : g.get(elem.number)) {
-                    if (w != elem.parent) {
-                        st.add(new MyData(q[w], w, elem.number));
-                    }
-                }
-                changed.add(elem.number);
-                total_sum += elem.key;
-                total_count += 1;
-                average = total_sum / (double) total_count;
-            } else {
+        mp.put(q[v], new ArrayList<>());
+        mp.get(q[v]).add(new Pair<>(v, parent));
+
+        while (!mp.isEmpty()) {
+            double key = mp.lastKey();
+            if (average >= key) {
                 break;
             }
+
+            List<Pair<Integer, Integer>> list_by_key = mp.remove(key);
+            assert list_by_key.size() != 0;
+            Pair<Integer, Integer> elem = list_by_key.remove(list_by_key.size() - 1);
+            if (!list_by_key.isEmpty()) {
+                mp.put(key, list_by_key);
+            }
+
+            for (Pair<Integer, Long> pair : g.get(elem.first)) {
+                int to = pair.first;
+                if (to != elem.second) {
+                    if (!mp.containsKey(q[to])) {
+                        mp.put(q[to], new ArrayList<>());
+                    }
+                    mp.get(q[to]).add(new Pair<>(to, elem.first));
+                }
+            }
+
+            changed.add(elem.first);
+            total_sum += key;
+            total_count += 1;
+            average = total_sum / (double) total_count;
         }
 
         for (int vertex : changed) {
@@ -128,103 +159,38 @@ public class MST {
         }
     }
 
-    private static void check_ordered(List<List<Pair<Integer, Long>>> g, double[] q, int root, double[] x) {
+    private static void check_mst_ordered(List<List<Pair<Integer, Long>>> g, double[] q, double[] x, int root, double STEP, boolean MODIFY) {
         int[] vis = new int[g.size()];
 
-        check_dfs_ordered(g, vis, root, -1, q, x);
+        check_dfs_mst_ordered(g, vis, q, x, root, -1, STEP, MODIFY);
 
         for (int i = 0; i < vis.length; i++) {
             if (vis[i] != 2) throw new RuntimeException("non-correct MST in vertex: " + i);
         }
     }
 
-    private static void check_dfs_ordered(
-            List<List<Pair<Integer, Long>>> g, int[] vis, int v, int parent, double[] q, double[] x
-    ) {
+    private static void check_dfs_mst_ordered(List<List<Pair<Integer, Long>>> g, int[] vis, double[] q, double[] x, int v, int parent, double STEP, boolean MODIFY) {
         vis[v] = 1;
         for (Pair<Integer, Long> pair : g.get(v)) {
             int to = pair.first;
-            int num = pair.second.intValue();
             if (to != parent) {
                 if (vis[to] == 0) {
-                    if (q[to] > q[v]) {
-                        throw new RuntimeException("unordered mst!");
+                    x[pair.second.intValue()] = 1;
+                    if (q[v] < q[to]) {
+                        throw new RuntimeException("something wrong");
                     }
-                    x[num] = 1;
-                    check_dfs_ordered(g, vis, to, v, q, x);
-                } else if (vis[to] == 1) {
-                    throw new RuntimeException("find cycle!");
-                } else if (vis[to] == 2) {
-                    throw new RuntimeException("unexpected edge!");
+                    check_dfs_mst_ordered(g, vis, q, x, to, v, STEP, MODIFY);
+                    if (MODIFY) {
+                        if (q[v] <= q[to]) {
+                            q[v] = q[to] + STEP;
+                        }
+                    }
+                } else {
+                    throw new RuntimeException("unexpected!");
                 }
             }
         }
         vis[v] = 2;
     }
 
-    private static void check_mst(List<List<Integer>> g) {
-        int[] vis = new int[g.size()];
-
-        check_dfs_mst(g, vis, 0, -1);
-
-        for (int i = 0; i < vis.length; i++) {
-            if (vis[i] != 2) throw new RuntimeException("non-correct MST in vertex: " + i);
-        }
-    }
-
-    private static void check_dfs_mst(List<List<Integer>> g, int[] vis, int v, int parent) {
-        vis[v] = 1;
-        for (int to : g.get(v)) {
-            if (to != parent) {
-                if (vis[to] == 0) {
-                    check_dfs_mst(g, vis, to, v);
-                } else if (vis[to] == 1) {
-                    throw new RuntimeException("find cycle!");
-                } else if (vis[to] == 2) {
-                    throw new RuntimeException("unexpected edge!");
-                }
-            }
-        }
-        vis[v] = 2;
-    }
-
-    private static class MyData implements Comparable<MyData> {
-        public double key;
-        public int number;
-        public int parent;
-
-        public MyData(double key, int number, int parent) {
-            this.key = key;
-            this.number = number;
-            this.parent = parent;
-        }
-
-        @Override
-        public int compareTo(MyData other) {
-            return Double.compare(this.key, other.key);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            MyData myData = (MyData) o;
-
-            if (Double.compare(myData.key, key) != 0) return false;
-            if (number != myData.number) return false;
-            return parent == myData.parent;
-        }
-
-        @Override
-        public int hashCode() {
-            int result;
-            long temp;
-            temp = Double.doubleToLongBits(key);
-            result = (int) (temp ^ (temp >>> 32));
-            result = 31 * result + number;
-            result = 31 * result + parent;
-            return result;
-        }
-    }
 }
