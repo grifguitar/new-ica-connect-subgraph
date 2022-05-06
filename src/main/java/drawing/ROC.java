@@ -10,14 +10,18 @@ import java.util.*;
  * static class
  */
 public class ROC {
-    private static boolean eq(Double x, Double y) {
-        if (x == null || y == null) {
-            throw new RuntimeException("null in equals double!");
-        }
-        return Math.abs(x - y) < 0.000001;
+    private static final double EPS = 1e-6;
+
+    public record ROCLine(
+            List<Pair<Number, Number>> line,
+            Double auc_roc,
+            Integer threshold_index,
+            Double threshold
+    ) {
+        // nothing
     }
 
-    public static Pair<List<Pair<Number, Number>>, String> getLine(Double[] predictions, Boolean[] labels) {
+    public static ROCLine getLine(Double[] predictions, Boolean[] labels) {
         if (predictions.length != labels.length) {
             throw new RuntimeException("invalid data #1 in Roc.draw method");
         }
@@ -45,12 +49,16 @@ public class ROC {
         double stepX = 1.0 / (double) w;
         double stepY = 1.0 / (double) h;
 
+        double max_height = -1;
+        int threshold_index = -1;
+        double threshold = -1e6;
+
         List<Pair<Number, Number>> points = new ArrayList<>();
         points.add(new Pair<>(x, y));
 
         for (int i = 0; i < list.size(); i++) {
             int cnt = i;
-            while ((cnt + 1) < list.size() && eq(list.get(cnt).first, list.get(cnt + 1).first)) {
+            while ((cnt + 1) < list.size() && (Math.abs(list.get(cnt).first - list.get(cnt + 1).first) < EPS)) {
                 cnt++;
             }
             int a = 0;
@@ -65,6 +73,14 @@ public class ROC {
             y += stepY * a;
             x += stepX * b;
             points.add(new Pair<>(x, y));
+
+            double curr_height = (y - x) / Math.sqrt(2.0);
+            if (curr_height >= max_height) {
+                threshold_index = points.size() - 1;
+                max_height = curr_height;
+                threshold = list.get(threshold_index).first;
+            }
+
             i = cnt;
         }
 
@@ -88,15 +104,15 @@ public class ROC {
             }
         }
 
-        if (denominator < 0.0001) {
+        if (denominator < EPS) {
             throw new RuntimeException("divide by zero!");
         }
 
-        return new Pair<>(points, String.format(" %.2f ", numerator / denominator));
+        return new ROCLine(points, numerator / denominator, threshold_index, threshold);
     }
 
-    public static void draw(String title, Map<String, Pair<List<Pair<Number, Number>>, String>> lines) {
-        Line diagonal = new Line(63, 665, 685, 40);
+    public static void draw(String title, Map<String, ROCLine> lines) {
+        Line diagonal = new Line(65, 665, 685, 40);
         diagonal.setStroke(Color.GRAY);
 
         DrawAPI.Axis xAxisData = new DrawAPI.Axis(

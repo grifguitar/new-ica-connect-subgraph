@@ -1,11 +1,8 @@
 package drawing;
 
-import utils.Pair;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -21,12 +18,12 @@ public class DrawUtils {
             Boolean[] p3 = extract(new BufferedReader(new FileReader(folder + "p_ans_2.txt", StandardCharsets.UTF_8)));
             Boolean[] p4 = extract(new BufferedReader(new FileReader(folder + "p_ans_3.txt", StandardCharsets.UTF_8)));
 
-            Map<String, Pair<List<Pair<Number, Number>>, String>> lines = new TreeMap<>();
+            Map<String, ROC.ROCLine> lines = new TreeMap<>();
 
-            lines.put("p-vs-0", ROC.getLine(p, p1));
-            lines.put("p-vs-1", ROC.getLine(p, p2));
-            lines.put("p-vs-2", ROC.getLine(p, p3));
-            lines.put("p-vs-3", ROC.getLine(p, p4));
+            lines.put("ans_0", ROC.getLine(p, p1));
+            lines.put("ans_1", ROC.getLine(p, p2));
+            lines.put("ans_2", ROC.getLine(p, p3));
+            lines.put("ans_3", ROC.getLine(p, p4));
 
             ROC.draw(title, lines);
         } catch (Exception e) {

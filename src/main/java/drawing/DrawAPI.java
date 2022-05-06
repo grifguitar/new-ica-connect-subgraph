@@ -35,7 +35,7 @@ public class DrawAPI extends Application {
 
     public static void addWindow(
             String title,
-            Map<String, Pair<List<Pair<Number, Number>>, String>> lines,
+            Map<String, ROC.ROCLine> lines,
             Axis xAxisData,
             Axis yAxisData,
             List<Node> otherObjects
@@ -55,7 +55,7 @@ public class DrawAPI extends Application {
 
     private record Window(
             String title,
-            Map<String, Pair<List<Pair<Number, Number>>, String>> lines,
+            Map<String, ROC.ROCLine> lines,
             Axis xAxisData,
             Axis yAxisData,
             List<Node> otherObjects
@@ -74,15 +74,34 @@ public class DrawAPI extends Application {
 
             for (String name : lines.keySet()) {
                 XYChart.Series<Number, Number> series = new XYChart.Series<>();
-                series.setName(name + lines.get(name).second);
-                for (Pair<Number, Number> point : lines.get(name).first) {
+                series.setName(name + String.format(" {%.2f} ", lines.get(name).auc_roc()));
+                for (Pair<Number, Number> point : lines.get(name).line()) {
                     series.getData().add(new XYChart.Data<>(point.first, point.second));
                 }
                 lineChart.getData().add(series);
             }
 
-            lineChart.setMinSize(700, 750);
-            lineChart.setMaxSize(700, 750);
+            for (String name : lines.keySet()) {
+                int ind = lines.get(name).threshold_index();
+                XYChart.Series<Number, Number> series = new XYChart.Series<>();
+                series.setName(String.format("cut = %.4f ", lines.get(name).threshold()));
+                double small = 0.002;
+                for (Pair<Double, Double> iter : List.of(
+                        new Pair<>(-small, -small),
+                        new Pair<>(-small, small),
+                        new Pair<>(small, small),
+                        new Pair<>(small, -small))
+                ) {
+                    series.getData().add(new XYChart.Data<>(
+                            ((double) lines.get(name).line().get(ind).first + iter.first),
+                            ((double) lines.get(name).line().get(ind).second + iter.second)
+                    ));
+                }
+                lineChart.getData().add(series);
+            }
+
+            lineChart.setMinSize(700, 770);
+            lineChart.setMaxSize(700, 770);
 
             Group group = new Group(lineChart);
 
@@ -90,7 +109,7 @@ public class DrawAPI extends Application {
                 group.getChildren().addAll(otherObjects);
             }
 
-            Scene scene = new Scene(group, 900, 900);
+            Scene scene = new Scene(group, 750, 800);
 
             stage.setScene(scene);
             saveToFile(
