@@ -2,10 +2,14 @@ package graph;
 
 import utils.Pair;
 
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public record Graph(
+        Map<Integer, String> namingMap,
         List<List<Pair<Integer, Long>>> graph,
         List<Pair<Integer, Integer>> edgesList
 ) {
@@ -20,6 +24,25 @@ public record Graph(
 
     public int getNodesCount() {
         return graph.size();
+    }
+
+    public void toDOT(String f_out, String graphName, double[] x, double[] q, double threshold) {
+        try (PrintWriter out = new PrintWriter(f_out + graphName + ".dot", StandardCharsets.UTF_8)) {
+            out.println("digraph " + graphName + " {");
+            namingMap.forEach((k, v) -> {
+                String color = (q[k] > threshold) ? "blue" : "black";
+                //out.println("N_" + k + " [shape=circle, color=" + color + ", label=\"" + v + " : " + String.format("%.4f", q[k]) + "\"];");
+                out.println("N_" + k + " [shape = box, color = " + color + ", label = \"" + v + "\"];");
+            });
+            for (int i = 0; i < edgesList.size(); i++) {
+                Pair<Integer, Integer> p = edgesList.get(i);
+                String color = (Math.abs(x[i] - 1.0) < 1e-5) ? "red" : "black";
+                out.println("N_" + p.first + " -> " + "N_" + p.second + " [ color = " + color + " ];");
+            }
+            out.println("}");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static int companionEdge(int num) {

@@ -2,6 +2,7 @@ package solver;
 
 import algo.MST;
 import drawing.DrawUtils;
+import drawing.GraphVis;
 import graph.Graph;
 import ilog.concert.*;
 import ilog.cplex.*;
@@ -389,6 +390,7 @@ public class ConnectCallbackSolver implements Closeable {
                             output.println(sol.q[i]);
                         }
                     }
+                    graph.toDOT("./answers/", "tmp_ans" + cnt_ans, sol.x, sol.q, 1);
                     DrawUtils.drawingAnswer("./answers/", "tmp_ans" + cnt_ans++);
                 } catch (Exception e) {
                     throw new RuntimeException(e);

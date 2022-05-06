@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class GraphIO {
-    public static Graph read(String f, Map<String, Integer> namingMap) throws IOException {
+    public static Graph read(String f, Map<String, Integer> namingMap, Map<Integer, String> revNamingMap) throws IOException {
         Scanner scanner = new Scanner(new FileReader(f, StandardCharsets.UTF_8));
 
         List<List<Pair<Integer, Long>>> graph = new ArrayList<>();
@@ -39,6 +39,6 @@ public class GraphIO {
             graph.get(_to).add(new Pair<>(_from, b));
         }
 
-        return new Graph(graph, edgesList);
+        return new Graph(revNamingMap, graph, edgesList);
     }
 }

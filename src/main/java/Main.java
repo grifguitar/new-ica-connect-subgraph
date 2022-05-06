@@ -48,7 +48,7 @@ public class Main {
 
             // read graph
 
-            Graph graph = GraphIO.read(IN + "test_small_025.graph", namingMap);
+            Graph graph = GraphIO.read(IN + "test_small_025.graph", namingMap, revNamingMap);
 
             try (PrintWriter log = new PrintWriter(LOGS + "edges.txt")) {
                 for (Pair<Integer, Integer> edge : graph.getEdges()) {
@@ -74,6 +74,7 @@ public class Main {
             // solve
 
             ConnectCallbackSolver solver = new ConnectCallbackSolver(matrix, graph);
+            //SimpleSolver solver = new SimpleSolver(matrix);
 
             if (solver.solve()) {
                 try (PrintWriter out = new PrintWriter(OUT)) {
@@ -83,7 +84,7 @@ public class Main {
                 System.out.println("debug: results not found!");
             }
 
-            solver.close();
+            //solver.close();
 
             // draw all from folder
 
