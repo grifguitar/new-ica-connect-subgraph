@@ -2,7 +2,6 @@ package solver;
 
 import algo.MST;
 import drawing.DrawUtils;
-import drawing.GraphVis;
 import graph.Graph;
 import ilog.concert.*;
 import ilog.cplex.*;
@@ -72,8 +71,6 @@ public class ConnectCallbackSolver implements Closeable {
 
     private final IloCplex cplex;
 
-    //private final AtomicReference<Double> lb;
-
     private int cnt_ans = 0;
 
     // constructor:
@@ -97,8 +94,6 @@ public class ConnectCallbackSolver implements Closeable {
         this.cplex = new IloCplex();
         this.cplex.setParam(IloCplex.Param.OptimalityTarget, IloCplex.OptimalityTarget.OptimalGlobal);
         this.cplex.setParam(IloCplex.Param.TimeLimit, TIME_LIMIT);
-
-        //this.lb = new AtomicReference<>(-1e10);
 
         addVariables();
         addObjective();
@@ -374,29 +369,25 @@ public class ConnectCallbackSolver implements Closeable {
 
                 double calcObj = calcObjective(sol);
 
-                //if (calcObj > lb.get()) {
-                //    lb.set(calcObj);
-                //}
                 log.println("before: " + oldStr);
                 log.println("after: " + newStr);
                 log.println();
 
                 try {
-                    try (PrintWriter output = new PrintWriter(
-                            "./answers/p.txt",
-                            StandardCharsets.UTF_8)
-                    ) {
-                        for (int i = 0; i < N; i++) {
-                            output.println(sol.q[i]);
+                    try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
+                        try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
+                            for (int i = 0; i < sol.q.length; i++) {
+                                out_q.println(sol.q[i]);
+                            }
+                            for (int i = 0; i < sol.x.length; i++) {
+                                out_x.println(sol.x[i]);
+                            }
                         }
                     }
-                    graph.toDOT("./answers/", "tmp_ans" + cnt_ans, sol.x, sol.q, 1);
-                    DrawUtils.drawingAnswer("./answers/", "tmp_ans" + cnt_ans++);
+                    DrawUtils.readResultAndDrawAll("./answers/", "tmp_ans" + cnt_ans++, graph);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-
-                //}
 
                 if (calcObj >= getIncumbentObjValue()) {
                     //System.out.println("found new solution: " + calcObj);
@@ -414,16 +405,17 @@ public class ConnectCallbackSolver implements Closeable {
         return cplex.solve();
     }
 
-    public void printResults(PrintWriter out) throws IloException {
-        System.out.println("obj = " + cplex.getObjValue());
-        for (int i = 0; i < D; i++) {
-            System.out.println(varNameOf("a", i) + " = " + cplex.getValue(v.a.get(i)));
+    public void writeVarsToFiles(PrintWriter out_q, PrintWriter out_x) throws IloException {
+//        System.out.println("obj = " + cplex.getObjValue());
+//        for (int i = 0; i < D; i++) {
+//            System.out.println(varNameOf("a", i) + " = " + cplex.getValue(v.a.get(i)));
+//        }
+        // to file:
+        for (int i = 0; i < v.q.size(); i++) {
+            out_q.println(cplex.getValue(v.q.get(i)));
         }
-        for (int i = 0; i < N; i++) {
-            //System.out.println(varNameOf("p", i) + " = " + cplex.getValue(var.P.get(i)));
-            //double p0 = cplex.getValue(v.g.get(i)) - cplex.getValue(v.f.get(i));
-            double p0 = cplex.getValue(v.q.get(i));
-            out.println(p0);
+        for (int i = 0; i < v.x.size(); i++) {
+            out_x.println(cplex.getValue(v.x.get(i)));
         }
     }
 

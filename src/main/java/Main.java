@@ -4,8 +4,6 @@ import graph.Graph;
 import io.GraphIO;
 import io.NewMatrixIO;
 import solver.ConnectCallbackSolver;
-import solver.SimpleCallbackSolver;
-import solver.SimpleSolver;
 import utils.Matrix;
 import utils.Pair;
 
@@ -17,7 +15,6 @@ import java.util.Objects;
 import static analysis.DataAnalysis.whitening;
 
 public class Main {
-    private static final String OUT = "./answers/p.txt";
     private static final String OUT_N = "./answers/p_ans_";
     private static final String IN = "./input_data/";
     private static final String LOGS = "./logs/";
@@ -77,18 +74,18 @@ public class Main {
             //SimpleSolver solver = new SimpleSolver(matrix);
 
             if (solver.solve()) {
-                try (PrintWriter out = new PrintWriter(OUT)) {
-                    solver.printResults(out);
+                try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
+                    try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
+                        solver.writeVarsToFiles(out_q, out_x);
+                    }
                 }
+                DrawUtils.readResultAndDrawAll("./answers/", "total_ans", graph);
             } else {
-                System.out.println("debug: results not found!");
+                System.out.println("ConnectCallbackSolver: integer results not found!");
             }
 
-            //solver.close();
+            solver.close();
 
-            // draw all from folder
-
-            DrawUtils.drawingAnswer("./answers/", "total_answer");
             DrawAPI.run();
 
         } catch (Exception e) {

@@ -26,13 +26,16 @@ public record Graph(
         return graph.size();
     }
 
-    public void toDOT(String f_out, String graphName, double[] x, double[] q, double threshold) {
-        try (PrintWriter out = new PrintWriter(f_out + graphName + ".dot", StandardCharsets.UTF_8)) {
+    public void saveAsDOT(String folder, String graphName, Double[] x, Double[] q, List<Pair<Double, Boolean[]>> modules) {
+        try (PrintWriter out = new PrintWriter(folder + graphName + ".dot", StandardCharsets.UTF_8)) {
             out.println("digraph " + graphName + " {");
             namingMap.forEach((k, v) -> {
-                String color = (q[k] > threshold) ? "red" : "yellow";
-                //out.println("N_" + k + " [shape=circle, color=" + color + ", label=\"" + v + " : " + String.format("%.4f", q[k]) + "\"];");
-                out.println("N_" + k + " [shape = box, style = filled, fillcolor = " + color + ", label = \""
+                String color = (q[k] > modules.get(2).first) ? "red" : "yellow";
+                String shape = (modules.get(2).second[k]) ? "ellipse" : "box";
+                if (color.equals("yellow") && shape.equals("ellipse")) {
+                    color = "green";
+                }
+                out.println("N_" + k + " [shape = " + shape + ", style = filled, fillcolor = " + color + ", label = \""
                         + v + "\\n" + String.format("%.4f", q[k]) + "\"];");
             });
             for (int i = 0; i < edgesList.size(); i++) {
@@ -40,8 +43,6 @@ public record Graph(
                 if ((Math.abs(x[i] - 1.0) < 1e-5)) {
                     out.println("N_" + p.first + " -> " + "N_" + p.second + " [ color = " + "blue" + " ];");
                 }
-                //String color = (Math.abs(x[i] - 1.0) < 1e-5) ? "red" : "black";
-                //out.println("N_" + p.first + " -> " + "N_" + p.second + " [ color = " + color + " ];");
             }
             out.println("}");
         } catch (Exception e) {
