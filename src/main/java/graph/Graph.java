@@ -26,15 +26,29 @@ public record Graph(
         return graph.size();
     }
 
-    public void saveAsDOT(String folder, String graphName, Double[] x, Double[] q, List<Pair<Double, Boolean[]>> modules) {
-        try (PrintWriter out = new PrintWriter(folder + graphName + ".dot", StandardCharsets.UTF_8)) {
+    public void saveAsDOT(String folder, String graphName, Double[] x, Double[] q, List<Pair<Double, Boolean[]>> modules, int module) {
+        try (PrintWriter out = new PrintWriter(folder + graphName + "_module" + module + ".dot", StandardCharsets.UTF_8)) {
             out.println("digraph " + graphName + " {");
             namingMap.forEach((k, v) -> {
-                String color = (q[k] > modules.get(2).first) ? "red" : "yellow";
-                String shape = (modules.get(2).second[k]) ? "ellipse" : "box";
-                if (color.equals("yellow") && shape.equals("ellipse")) {
+                Boolean isPredict = (q[k] > modules.get(module).first);
+                Boolean isTrue = (modules.get(module).second[k]);
+
+                String color;
+                String shape;
+                if (isPredict && isTrue) {
                     color = "green";
+                    shape = "ellipse";
+                } else if (!isPredict && isTrue) {
+                    color = "red";
+                    shape = "ellipse";
+                } else if (isPredict) {
+                    color = "blue";
+                    shape = "box";
+                } else {
+                    color = "yellow";
+                    shape = "box";
                 }
+
                 out.println("N_" + k + " [shape = " + shape + ", style = filled, fillcolor = " + color + ", label = \""
                         + v + "\\n" + String.format("%.4f", q[k]) + "\"];");
             });
