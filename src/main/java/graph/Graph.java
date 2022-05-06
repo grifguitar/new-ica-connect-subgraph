@@ -30,14 +30,18 @@ public record Graph(
         try (PrintWriter out = new PrintWriter(f_out + graphName + ".dot", StandardCharsets.UTF_8)) {
             out.println("digraph " + graphName + " {");
             namingMap.forEach((k, v) -> {
-                String color = (q[k] > threshold) ? "blue" : "black";
+                String color = (q[k] > threshold) ? "red" : "yellow";
                 //out.println("N_" + k + " [shape=circle, color=" + color + ", label=\"" + v + " : " + String.format("%.4f", q[k]) + "\"];");
-                out.println("N_" + k + " [shape = box, color = " + color + ", label = \"" + v + "\"];");
+                out.println("N_" + k + " [shape = box, style = filled, fillcolor = " + color + ", label = \""
+                        + v + "\\n" + String.format("%.4f", q[k]) + "\"];");
             });
             for (int i = 0; i < edgesList.size(); i++) {
                 Pair<Integer, Integer> p = edgesList.get(i);
-                String color = (Math.abs(x[i] - 1.0) < 1e-5) ? "red" : "black";
-                out.println("N_" + p.first + " -> " + "N_" + p.second + " [ color = " + color + " ];");
+                if ((Math.abs(x[i] - 1.0) < 1e-5)) {
+                    out.println("N_" + p.first + " -> " + "N_" + p.second + " [ color = " + "blue" + " ];");
+                }
+                //String color = (Math.abs(x[i] - 1.0) < 1e-5) ? "red" : "black";
+                //out.println("N_" + p.first + " -> " + "N_" + p.second + " [ color = " + color + " ];");
             }
             out.println("}");
         } catch (Exception e) {
