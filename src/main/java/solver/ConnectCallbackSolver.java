@@ -285,6 +285,10 @@ public class ConnectCallbackSolver implements Closeable {
                 throw new RuntimeException("unexpected l1norm after adapt");
             }
 
+            for (int i = 0; i < f.length; i++) {
+                q[i] = f[i];
+            }
+
             MST.solve(graph, x, q, r, STEP);
 
             return true;
