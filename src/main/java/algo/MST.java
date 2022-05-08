@@ -103,27 +103,35 @@ public class MST {
             if (to != parent) {
                 if (vis[to] == 0) {
                     check_dfs_mst(g, vis, q, to, v);
-                    tuning(g, q, to, v);
                 } else {
                     throw new RuntimeException("unexpected!");
                 }
             }
         }
         vis[v] = 2;
+        tuning(g, q, v, parent);
     }
 
-    private static void tuning(List<List<Pair<Integer, Long>>> g, double[] q, int v, int parent) {
+    private static void tuning(List<List<Pair<Integer, Long>>> g, double[] q, int currVertex, int parVertex) {
         List<Integer> changed = new ArrayList<>();
 
-        changed.add(parent);
-        double total_sum = q[parent];
+        changed.add(currVertex);
+        double total_sum = q[currVertex];
         int total_count = 1;
         double average = total_sum / (double) total_count;
 
         TreeMap<Double, List<Pair<Integer, Integer>>> mp = new TreeMap<>();
 
-        mp.put(q[v], new ArrayList<>());
-        mp.get(q[v]).add(new Pair<>(v, parent));
+        Pair<Integer, Integer> elem2 = new Pair<>(currVertex, parVertex);
+        for (Pair<Integer, Long> pair : g.get(elem2.first)) {
+            int to = pair.first;
+            if (to != elem2.second) {
+                if (!mp.containsKey(q[to])) {
+                    mp.put(q[to], new ArrayList<>());
+                }
+                mp.get(q[to]).add(new Pair<>(to, elem2.first));
+            }
+        }
 
         while (!mp.isEmpty()) {
             double key = mp.lastKey();

@@ -54,9 +54,9 @@ public record Graph(
                         if (isPredict1 && isPredict2) {
                             color = "green";
                         } else if (isPredict1) {
-                            color = "yellow";
+                            color = "yellowgreen";
                         } else if (isPredict2) {
-                            color = "gold";
+                            color = "greenyellow";
                         } else {
                             color = "red";
                         }
@@ -67,7 +67,7 @@ public record Graph(
                         } else if (isPredict1) {
                             color = "green";
                         } else if (isPredict2) {
-                            color = "lightgreen";
+                            color = "yellow";
                         } else {
                             color = "red";
                         }
@@ -76,7 +76,7 @@ public record Graph(
                         if (isPredict1 && isPredict2) {
                             color = "aqua";
                         } else if (isPredict1) {
-                            color = "lightgreen";
+                            color = "yellow";
                         } else if (isPredict2) {
                             color = "green";
                         } else {
@@ -85,11 +85,11 @@ public record Graph(
                         break;
                     case "box":
                         if (isPredict1 && isPredict2) {
-                            color = "purple";
+                            color = "blue";
                         } else if (isPredict1) {
-                            color = "pink";
+                            color = "cornflowerblue";
                         } else if (isPredict2) {
-                            color = "plum";
+                            color = "darkcyan";
                         } else {
                             color = "lightgray";
                         }
