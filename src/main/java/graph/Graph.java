@@ -26,27 +26,76 @@ public record Graph(
         return graph.size();
     }
 
-    public void saveAsDOT(String folder, String graphName, Double[] x, Double[] q, List<Pair<Double, Boolean[]>> modules, int module) {
-        try (PrintWriter out = new PrintWriter(folder + graphName + "_module" + module + ".dot", StandardCharsets.UTF_8)) {
+    public void saveAsDOT(String folder, String graphName, Double[] x, Double[] q, List<Pair<Double, Boolean[]>> modules, Pair<Integer, Integer> module) {
+        try (PrintWriter out = new PrintWriter(
+                folder + graphName + "_module" + module.toString().replaceAll("\\s", "") + ".dot", StandardCharsets.UTF_8
+        )) {
             out.println("digraph " + graphName + " {");
             namingMap.forEach((k, v) -> {
-                Boolean isPredict = (q[k] > modules.get(module).first);
-                Boolean isTrue = (modules.get(module).second[k]);
+                Boolean isPredict1 = (q[k] > modules.get(module.first).first);
+                Boolean isTrue1 = (modules.get(module.first).second[k]);
+                Boolean isPredict2 = (q[k] > modules.get(module.second).first);
+                Boolean isTrue2 = (modules.get(module.second).second[k]);
 
                 String color;
                 String shape;
-                if (isPredict && isTrue) {
-                    color = "green";
+                if (isTrue1 && isTrue2) {
+                    shape = "doubleoctagon";
+                } else if (isTrue1) {
                     shape = "ellipse";
-                } else if (!isPredict && isTrue) {
-                    color = "red";
-                    shape = "ellipse";
-                } else if (isPredict) {
-                    color = "blue";
-                    shape = "box";
+                } else if (isTrue2) {
+                    shape = "octagon";
                 } else {
-                    color = "yellow";
                     shape = "box";
+                }
+
+                switch (shape) {
+                    case "doubleoctagon":
+                        if (isPredict1 && isPredict2) {
+                            color = "green";
+                        } else if (isPredict1) {
+                            color = "yellow";
+                        } else if (isPredict2) {
+                            color = "gold";
+                        } else {
+                            color = "red";
+                        }
+                        break;
+                    case "ellipse":
+                        if (isPredict1 && isPredict2) {
+                            color = "aqua";
+                        } else if (isPredict1) {
+                            color = "green";
+                        } else if (isPredict2) {
+                            color = "orange";
+                        } else {
+                            color = "red";
+                        }
+                        break;
+                    case "octagon":
+                        if (isPredict1 && isPredict2) {
+                            color = "aqua";
+                        } else if (isPredict1) {
+                            color = "orange";
+                        } else if (isPredict2) {
+                            color = "green";
+                        } else {
+                            color = "red";
+                        }
+                        break;
+                    case "box":
+                        if (isPredict1 && isPredict2) {
+                            color = "purple";
+                        } else if (isPredict1) {
+                            color = "pink";
+                        } else if (isPredict2) {
+                            color = "plum";
+                        } else {
+                            color = "lightgray";
+                        }
+                        break;
+                    default:
+                        throw new RuntimeException("unexpected shape");
                 }
 
                 out.println("N_" + k + " [shape = " + shape + ", style = filled, fillcolor = " + color + ", label = \""
