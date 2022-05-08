@@ -67,7 +67,7 @@ public record Graph(
                         } else if (isPredict1) {
                             color = "green";
                         } else if (isPredict2) {
-                            color = "orange";
+                            color = "lightgreen";
                         } else {
                             color = "red";
                         }
@@ -76,7 +76,7 @@ public record Graph(
                         if (isPredict1 && isPredict2) {
                             color = "aqua";
                         } else if (isPredict1) {
-                            color = "orange";
+                            color = "lightgreen";
                         } else if (isPredict2) {
                             color = "green";
                         } else {

@@ -136,7 +136,7 @@ N_133 [shape = box, style = filled, fillcolor = lightgray, label = "GNG4(2786)\n
 N_134 [shape = box, style = filled, fillcolor = lightgray, label = "RAP1A(5906)\n0,0100"];
 N_135 [shape = ellipse, style = filled, fillcolor = red, label = "RASA1(5921)\n0,0100"];
 N_136 [shape = ellipse, style = filled, fillcolor = red, label = "MNDA(4332)\n0,0100"];
-N_137 [shape = ellipse, style = filled, fillcolor = orange, label = "RARA(5914)\n0,0250"];
+N_137 [shape = ellipse, style = filled, fillcolor = lightgreen, label = "RARA(5914)\n0,0250"];
 N_138 [shape = octagon, style = filled, fillcolor = red, label = "RBL1(5933)\n0,0118"];
 N_139 [shape = octagon, style = filled, fillcolor = red, label = "PPP4C(5531)\n0,0100"];
 N_140 [shape = octagon, style = filled, fillcolor = red, label = "RELA(5970)\n0,0100"];

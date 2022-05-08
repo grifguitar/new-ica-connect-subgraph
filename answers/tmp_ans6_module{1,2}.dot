@@ -1,5 +1,5 @@
 digraph tmp_ans6 {
-N_0 [shape = octagon, style = filled, fillcolor = orange, label = "ADD1(118)\n0,8871"];
+N_0 [shape = octagon, style = filled, fillcolor = lightgreen, label = "ADD1(118)\n0,8871"];
 N_1 [shape = box, style = filled, fillcolor = lightgray, label = "ADD2(119)\n0,1608"];
 N_2 [shape = box, style = filled, fillcolor = lightgray, label = "PARP1(142)\n0,0350"];
 N_3 [shape = octagon, style = filled, fillcolor = red, label = "ADRB2(154)\n0,6620"];
@@ -215,7 +215,7 @@ N_212 [shape = box, style = filled, fillcolor = lightgray, label = "RRAS2(22800)
 N_213 [shape = octagon, style = filled, fillcolor = red, label = "PRPF40A(55660)\n0,0100"];
 N_214 [shape = box, style = filled, fillcolor = lightgray, label = "ZNF259(8882)\n0,0100"];
 N_215 [shape = box, style = filled, fillcolor = lightgray, label = "WRNIP1(56897)\n0,0100"];
-N_216 [shape = octagon, style = filled, fillcolor = orange, label = "IL21R(50615)\n0,7667"];
+N_216 [shape = octagon, style = filled, fillcolor = lightgreen, label = "IL21R(50615)\n0,7667"];
 N_217 [shape = octagon, style = filled, fillcolor = aqua, label = "GORASP1(64689)\n1,4575"];
 N_218 [shape = ellipse, style = filled, fillcolor = red, label = "IL17RB(55540)\n0,3699"];
 N_219 [shape = box, style = filled, fillcolor = lightgray, label = "RTN4(57142)\n0,0200"];

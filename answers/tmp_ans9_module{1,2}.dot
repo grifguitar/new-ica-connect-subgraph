@@ -1,5 +1,5 @@
 digraph tmp_ans9 {
-N_0 [shape = octagon, style = filled, fillcolor = orange, label = "ADD1(118)\n1,2485"];
+N_0 [shape = octagon, style = filled, fillcolor = lightgreen, label = "ADD1(118)\n1,2485"];
 N_1 [shape = box, style = filled, fillcolor = lightgray, label = "ADD2(119)\n0,1874"];
 N_2 [shape = box, style = filled, fillcolor = lightgray, label = "PARP1(142)\n0,0350"];
 N_3 [shape = octagon, style = filled, fillcolor = red, label = "ADRB2(154)\n1,0528"];

@@ -30,7 +30,7 @@ N_27 [shape = box, style = filled, fillcolor = lightgray, label = "CCR2(1231)\n0
 N_28 [shape = box, style = filled, fillcolor = lightgray, label = "BCL3(602)\n0,0100"];
 N_29 [shape = octagon, style = filled, fillcolor = red, label = "CREB1(1385)\n0,0100"];
 N_30 [shape = doubleoctagon, style = filled, fillcolor = yellow, label = "CREBBP(1387)\n0,1370"];
-N_31 [shape = octagon, style = filled, fillcolor = orange, label = "CAMK4(814)\n0,1370"];
+N_31 [shape = octagon, style = filled, fillcolor = lightgreen, label = "CAMK4(814)\n0,1370"];
 N_32 [shape = box, style = filled, fillcolor = lightgray, label = "CREM(1390)\n0,0100"];
 N_33 [shape = octagon, style = filled, fillcolor = red, label = "CRK(1398)\n0,0250"];
 N_34 [shape = box, style = filled, fillcolor = lightgray, label = "ZFP36L1(677)\n0,0100"];
@@ -41,7 +41,7 @@ N_38 [shape = box, style = filled, fillcolor = lightgray, label = "DAPK1(1612)\n
 N_39 [shape = box, style = filled, fillcolor = lightgray, label = "ERCC8(1161)\n0,0100"];
 N_40 [shape = box, style = filled, fillcolor = lightgray, label = "DNMT1(1786)\n0,0100"];
 N_41 [shape = ellipse, style = filled, fillcolor = red, label = "TSC22D3(1831)\n0,0100"];
-N_42 [shape = octagon, style = filled, fillcolor = orange, label = "EEF1A1(1915)\n0,1370"];
+N_42 [shape = octagon, style = filled, fillcolor = lightgreen, label = "EEF1A1(1915)\n0,1370"];
 N_43 [shape = box, style = filled, fillcolor = lightgray, label = "KLF6(1316)\n0,0100"];
 N_44 [shape = octagon, style = filled, fillcolor = red, label = "EIF2S1(1965)\n0,0100"];
 N_45 [shape = box, style = filled, fillcolor = lightgray, label = "EIF4G2(1982)\n0,0276"];

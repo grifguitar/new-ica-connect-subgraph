@@ -103,7 +103,7 @@ N_100 [shape = octagon, style = filled, fillcolor = red, label = "NCAM1(4684)\n0
 N_101 [shape = box, style = filled, fillcolor = lightgray, label = "NCF1(4687)\n0,0200"];
 N_102 [shape = box, style = filled, fillcolor = lightgray, label = "CSNK1G2(1455)\n0,0100"];
 N_103 [shape = box, style = filled, fillcolor = lightgray, label = "HIP2(3093)\n0,0100"];
-N_104 [shape = octagon, style = filled, fillcolor = orange, label = "NCK1(4690)\n0,1499"];
+N_104 [shape = octagon, style = filled, fillcolor = lightgreen, label = "NCK1(4690)\n0,1499"];
 N_105 [shape = octagon, style = filled, fillcolor = red, label = "NEK2(4751)\n0,0100"];
 N_106 [shape = box, style = filled, fillcolor = lightgray, label = "IRF2(3660)\n0,0100"];
 N_107 [shape = box, style = filled, fillcolor = lightgray, label = "GLG1(2734)\n0,0100"];
@@ -154,7 +154,7 @@ N_151 [shape = doubleoctagon, style = filled, fillcolor = yellow, label = "STAT1
 N_152 [shape = box, style = filled, fillcolor = lightgray, label = "STAT5A(6776)\n0,0250"];
 N_153 [shape = ellipse, style = filled, fillcolor = red, label = "RPS6KB1(6198)\n0,0100"];
 N_154 [shape = ellipse, style = filled, fillcolor = aqua, label = "PLAUR(5329)\n0,1902"];
-N_155 [shape = octagon, style = filled, fillcolor = orange, label = "SYK(6850)\n0,0900"];
+N_155 [shape = octagon, style = filled, fillcolor = lightgreen, label = "SYK(6850)\n0,0900"];
 N_156 [shape = box, style = filled, fillcolor = lightgray, label = "TCEB2(6923)\n0,0100"];
 N_157 [shape = octagon, style = filled, fillcolor = red, label = "TCF3(6929)\n0,0100"];
 N_158 [shape = octagon, style = filled, fillcolor = red, label = "TAL1(6886)\n0,0200"];
@@ -166,7 +166,7 @@ N_163 [shape = octagon, style = filled, fillcolor = red, label = "TGFA(7039)\n0,
 N_164 [shape = box, style = filled, fillcolor = lightgray, label = "ITGB6(3694)\n0,0100"];
 N_165 [shape = octagon, style = filled, fillcolor = red, label = "TGFB1(7040)\n0,0200"];
 N_166 [shape = box, style = filled, fillcolor = lightgray, label = "POLE2(5427)\n0,0100"];
-N_167 [shape = octagon, style = filled, fillcolor = orange, label = "TLR4(7099)\n0,0900"];
+N_167 [shape = octagon, style = filled, fillcolor = lightgreen, label = "TLR4(7099)\n0,0900"];
 N_168 [shape = octagon, style = filled, fillcolor = red, label = "TOP1(7150)\n0,0100"];
 N_169 [shape = doubleoctagon, style = filled, fillcolor = green, label = "TP53(7157)\n0,1902"];
 N_170 [shape = doubleoctagon, style = filled, fillcolor = yellow, label = "TNFRSF1B(7133)\n0,0855"];
