@@ -52,28 +52,50 @@ public class DrawUtils {
         try {
             Double[] q = readAsDoubleArray(folder + "q.txt");
             Double[] x = readAsDoubleArray(folder + "x.txt");
+            Double[] t = readAsDoubleArray(folder + "t.txt");
+            Double[] y = readAsDoubleArray(folder + "y.txt");
             Boolean[] p0 = readAsBooleanArray(folder + "p_ans_0.txt");
             Boolean[] p1 = readAsBooleanArray(folder + "p_ans_1.txt");
             Boolean[] p2 = readAsBooleanArray(folder + "p_ans_2.txt");
             Boolean[] p3 = readAsBooleanArray(folder + "p_ans_3.txt");
 
-            Map<String, ROC.ROCLine> lines = new TreeMap<>();
+            Map<String, ROC.ROCLine> lines_q = new TreeMap<>();
 
-            lines.put("ans_0", ROC.getLine(q, p0));
-            lines.put("ans_1", ROC.getLine(q, p1));
-            lines.put("ans_2", ROC.getLine(q, p2));
-            lines.put("ans_3", ROC.getLine(q, p3));
+            lines_q.put("ans_0", ROC.getLine(q, p0));
+            lines_q.put("ans_1", ROC.getLine(q, p1));
+            lines_q.put("ans_2", ROC.getLine(q, p2));
+            lines_q.put("ans_3", ROC.getLine(q, p3));
 
-            List<Pair<Double, Boolean[]>> modules = new ArrayList<>();
-            modules.add(new Pair<>(lines.get("ans_0").threshold(), p0));
-            modules.add(new Pair<>(lines.get("ans_1").threshold(), p1));
-            modules.add(new Pair<>(lines.get("ans_2").threshold(), p2));
-            modules.add(new Pair<>(lines.get("ans_3").threshold(), p3));
+            List<Pair<Double, Boolean[]>> modules_q = new ArrayList<>();
+            modules_q.add(new Pair<>(lines_q.get("ans_0").threshold(), p0));
+            modules_q.add(new Pair<>(lines_q.get("ans_1").threshold(), p1));
+            modules_q.add(new Pair<>(lines_q.get("ans_2").threshold(), p2));
+            modules_q.add(new Pair<>(lines_q.get("ans_3").threshold(), p3));
 
-            for (int i = 0; i < 4; i++)
-                graph.saveAsDOT("./answers/", title, x, q, modules, new Pair<>(i, null));
+            for (int i = 0; i < 4; i++) {
+                graph.saveAsDOT("./answers/", title + "x", x, q, modules_q, new Pair<>(i, null));
+            }
 
-            ROC.draw(title, lines);
+            ROC.draw(title + "x", lines_q);
+
+            Map<String, ROC.ROCLine> lines_t = new TreeMap<>();
+
+            lines_t.put("ans_0", ROC.getLine(t, p0));
+            lines_t.put("ans_1", ROC.getLine(t, p1));
+            lines_t.put("ans_2", ROC.getLine(t, p2));
+            lines_t.put("ans_3", ROC.getLine(t, p3));
+
+            List<Pair<Double, Boolean[]>> modules_t = new ArrayList<>();
+            modules_t.add(new Pair<>(lines_t.get("ans_0").threshold(), p0));
+            modules_t.add(new Pair<>(lines_t.get("ans_1").threshold(), p1));
+            modules_t.add(new Pair<>(lines_t.get("ans_2").threshold(), p2));
+            modules_t.add(new Pair<>(lines_t.get("ans_3").threshold(), p3));
+
+            for (int i = 0; i < 4; i++) {
+                graph.saveAsDOT("./answers/", title + "y", y, t, modules_t, new Pair<>(i, null));
+            }
+
+            ROC.draw(title + "y", lines_t);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

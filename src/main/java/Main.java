@@ -101,7 +101,11 @@ public class Main {
             if (solver.solve()) {
                 try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
                     try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
-                        solver.writeVarsToFiles(out_q, out_x);
+                        try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
+                            try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
+                                solver.writeVarsToFiles(out_q, out_x, out_t, out_y);
+                            }
+                        }
                     }
                 }
                 DrawUtils.readResultAndDrawAll("./answers/", "total_ans", graph);

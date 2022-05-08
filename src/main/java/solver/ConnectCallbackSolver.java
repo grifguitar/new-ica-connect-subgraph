@@ -34,6 +34,11 @@ public class ConnectCallbackSolver implements Closeable {
 
         public final List<IloNumVar> x;
 
+        public final List<IloNumVar> s;
+        public final List<IloNumVar> t;
+
+        public final List<IloNumVar> y;
+
         public Variables() {
             this.a = new ArrayList<>();
             this.f = new ArrayList<>();
@@ -45,6 +50,11 @@ public class ConnectCallbackSolver implements Closeable {
             this.q = new ArrayList<>();
 
             this.x = new ArrayList<>();
+
+            this.s = new ArrayList<>();
+            this.t = new ArrayList<>();
+
+            this.y = new ArrayList<>();
         }
     }
 
@@ -53,7 +63,6 @@ public class ConnectCallbackSolver implements Closeable {
     private final static float INF = 1000;
     private final static int TIME_LIMIT = 20;
     private final static int L1NORM = 250;
-    private final static double PHI = 0.01;
     private final static double STEP = 0.001;
 
     // variables:
@@ -118,37 +127,51 @@ public class ConnectCallbackSolver implements Closeable {
         for (int i = 0; i < N; i++) {
             v.r.add(cplex.numVar(0, 1, IloNumVarType.Int, varNameOf("r", i)));
             v.q.add(cplex.numVar(0, INF, IloNumVarType.Float, varNameOf("q", i)));
+            v.s.add(cplex.numVar(0, 1, IloNumVarType.Int, varNameOf("s", i)));
+            v.t.add(cplex.numVar(0, INF, IloNumVarType.Float, varNameOf("t", i)));
         }
         for (int i = 0; i < E; i++) {
             v.x.add(cplex.numVar(0, 1, IloNumVarType.Int, varNameOf("x", i)));
+            v.y.add(cplex.numVar(0, 1, IloNumVarType.Int, varNameOf("y", i)));
         }
     }
 
     private void addObjective() throws IloException {
         IloNumExpr[] squares = new IloNumExpr[D];
         for (int i = 0; i < squares.length; i++) {
-            squares[i] = cplex.prod(cplex.prod(v.a.get(i), v.a.get(i)), N);
+            squares[i] = cplex.prod(cplex.prod(v.a.get(i), v.a.get(i)), N * 10);
         }
-        IloNumExpr[] err = new IloNumExpr[N];
-        for (int i = 0; i < err.length; i++) {
-            err[i] = cplex.diff(v.f.get(i), v.q.get(i));
-            err[i] = cplex.prod(err[i], err[i]);
+        IloNumExpr[] err_f = new IloNumExpr[N];
+        for (int i = 0; i < err_f.length; i++) {
+            err_f[i] = cplex.diff(v.f.get(i), v.q.get(i));
+            err_f[i] = cplex.prod(err_f[i], err_f[i]);
         }
-        cplex.addMaximize(cplex.diff(cplex.sum(squares), cplex.sum(err)));
+        IloNumExpr[] err_g = new IloNumExpr[N];
+        for (int i = 0; i < err_g.length; i++) {
+            err_g[i] = cplex.diff(v.g.get(i), v.t.get(i));
+            err_g[i] = cplex.prod(err_g[i], err_g[i]);
+        }
+        cplex.addMaximize(cplex.diff(cplex.diff(cplex.sum(squares), cplex.sum(err_f)), cplex.sum(err_g)));
     }
 
     private static double calcObjective(RawSolution sol) {
         double sum = 0;
         double[] squares = new double[sol.matrix.numCols()];
         for (int i = 0; i < squares.length; i++) {
-            squares[i] = sol.a[i] * sol.a[i] * sol.matrix.numRows();
+            squares[i] = sol.a[i] * sol.a[i] * sol.matrix.numRows() * 10;
             sum += squares[i];
         }
-        double[] err = new double[sol.matrix.numRows()];
-        for (int i = 0; i < err.length; i++) {
-            err[i] = (sol.f[i] - sol.q[i]);
-            err[i] = err[i] * err[i];
-            sum -= err[i];
+        double[] err_f = new double[sol.matrix.numRows()];
+        for (int i = 0; i < err_f.length; i++) {
+            err_f[i] = (sol.f[i] - sol.q[i]);
+            err_f[i] = err_f[i] * err_f[i];
+            sum -= err_f[i];
+        }
+        double[] err_g = new double[sol.matrix.numRows()];
+        for (int i = 0; i < err_g.length; i++) {
+            err_g[i] = (sol.g[i] - sol.t[i]);
+            err_g[i] = err_g[i] * err_g[i];
+            sum -= err_g[i];
         }
         return sum;
     }
@@ -176,6 +199,7 @@ public class ConnectCallbackSolver implements Closeable {
 
     private void addConnectConstraint() throws IloException {
         cplex.addEq(cplex.sum(toArray(v.r)), 1);
+        cplex.addEq(cplex.sum(toArray(v.s)), 1);
 
         for (int num = 0; num < E; num += 2) {
             int back_num = Graph.companionEdge(num);
@@ -189,10 +213,15 @@ public class ConnectCallbackSolver implements Closeable {
                     cplex.sum(v.x.get(num), v.x.get(back_num)),
                     1
             );
+            cplex.addLe(
+                    cplex.sum(v.y.get(num), v.y.get(back_num)),
+                    1
+            );
         }
 
         for (int vertex = 0; vertex < N; vertex++) {
-            List<IloNumVar> input_edges = new ArrayList<>();
+            List<IloNumVar> input_edges_x = new ArrayList<>();
+            List<IloNumVar> input_edges_y = new ArrayList<>();
             for (Pair<Integer, Long> to : graph.edgesOf(vertex)) {
                 int num = to.second.intValue();
                 int back_num = Graph.companionEdge(num);
@@ -200,28 +229,29 @@ public class ConnectCallbackSolver implements Closeable {
                 Graph.checkEdges(graph, num, back_num);
                 Graph.checkDest(graph, back_num, vertex);
 
-                input_edges.add(v.x.get(back_num));
+                input_edges_x.add(v.x.get(back_num));
+                input_edges_y.add(v.y.get(back_num));
             }
 
             cplex.addEq(
-                    cplex.sum(cplex.sum(toArray(input_edges)), v.r.get(vertex)),
+                    cplex.sum(cplex.sum(toArray(input_edges_x)), v.r.get(vertex)),
+                    1
+            );
+            cplex.addEq(
+                    cplex.sum(cplex.sum(toArray(input_edges_y)), v.s.get(vertex)),
                     1
             );
         }
 
         for (int num = 0; num < E; num++) {
             Pair<Integer, Integer> edge = graph.getEdges().get(num);
-//            cplex.addLe(
-//                    cplex.prod(PHI, v.x.get(num)),
-//                    v.q.get(edge.first)
-//            );
-//            cplex.addLe(
-//                    cplex.prod(PHI, v.x.get(num)),
-//                    v.q.get(edge.second)
-//            );
             cplex.addGe(
                     cplex.sum(INF, cplex.diff(v.q.get(edge.first), v.q.get(edge.second))),
                     cplex.sum(cplex.prod(INF, v.x.get(num)), STEP)
+            );
+            cplex.addGe(
+                    cplex.sum(INF, cplex.diff(v.t.get(edge.first), v.t.get(edge.second))),
+                    cplex.sum(cplex.prod(INF, v.y.get(num)), STEP)
             );
         }
     }
@@ -243,7 +273,10 @@ public class ConnectCallbackSolver implements Closeable {
             double[] beta,
             double[] r,
             double[] q,
-            double[] x
+            double[] x,
+            double[] s,
+            double[] t,
+            double[] y
     ) {
         private static final double eps = 1e-6;
 
@@ -285,11 +318,17 @@ public class ConnectCallbackSolver implements Closeable {
                 throw new RuntimeException("unexpected l1norm after adapt");
             }
 
-//            for (int i = 0; i < f.length; i++) {
-//                q[i] = f[i];
-//            }
+            for (int i = 0; i < f.length; i++) {
+                q[i] = f[i];
+            }
+
+            for (int i = 0; i < g.length; i++) {
+                t[i] = g[i];
+            }
 
             MST.solve(graph, x, q, r, STEP);
+
+            MST.solve(graph, y, t, s, STEP);
 
             return true;
         }
@@ -307,16 +346,19 @@ public class ConnectCallbackSolver implements Closeable {
         }
 
         public double[] getValues() {
-            double[] ans = new double[matrix.numCols() + 6 * matrix.numRows() + graph().getEdges().size()];
+            double[] ans = new double[matrix.numCols() + 8 * matrix.numRows() + 2 * graph().getEdges().size()];
             int ind_ans = 0;
-            for (double y : a) ans[ind_ans++] = y;
-            for (double y : f) ans[ind_ans++] = y;
-            for (double y : g) ans[ind_ans++] = y;
-            for (double y : alpha) ans[ind_ans++] = y;
-            for (double y : beta) ans[ind_ans++] = y;
-            for (double y : r) ans[ind_ans++] = y;
-            for (double y : q) ans[ind_ans++] = y;
-            for (double y : x) ans[ind_ans++] = y;
+            for (double z : a) ans[ind_ans++] = z;
+            for (double z : f) ans[ind_ans++] = z;
+            for (double z : g) ans[ind_ans++] = z;
+            for (double z : alpha) ans[ind_ans++] = z;
+            for (double z : beta) ans[ind_ans++] = z;
+            for (double z : r) ans[ind_ans++] = z;
+            for (double z : q) ans[ind_ans++] = z;
+            for (double z : x) ans[ind_ans++] = z;
+            for (double z : s) ans[ind_ans++] = z;
+            for (double z : t) ans[ind_ans++] = z;
+            for (double z : y) ans[ind_ans++] = z;
             return ans;
         }
 
@@ -333,6 +375,9 @@ public class ConnectCallbackSolver implements Closeable {
                     "\n| r = " + Arrays.toString(r) +
                     "\n| q = " + Arrays.toString(q) +
                     "\n| x = " + Arrays.toString(x) +
+                    "\n| s = " + Arrays.toString(s) +
+                    "\n| t = " + Arrays.toString(t) +
+                    "\n| y = " + Arrays.toString(y) +
                     "\n}";
         }
     }
@@ -340,16 +385,19 @@ public class ConnectCallbackSolver implements Closeable {
     private class ICACallback extends IloCplex.HeuristicCallback {
         @Override
         protected void main() throws IloException {
-            IloNumVar[] vars = new IloNumVar[D + 6 * N + E];
+            IloNumVar[] vars = new IloNumVar[D + 8 * N + 2 * E];
             int ind_var = 0;
-            for (IloNumVar y : v.a) vars[ind_var++] = y;
-            for (IloNumVar y : v.f) vars[ind_var++] = y;
-            for (IloNumVar y : v.g) vars[ind_var++] = y;
-            for (IloNumVar y : v.alpha) vars[ind_var++] = y;
-            for (IloNumVar y : v.beta) vars[ind_var++] = y;
-            for (IloNumVar y : v.r) vars[ind_var++] = y;
-            for (IloNumVar y : v.q) vars[ind_var++] = y;
-            for (IloNumVar y : v.x) vars[ind_var++] = y;
+            for (IloNumVar z : v.a) vars[ind_var++] = z;
+            for (IloNumVar z : v.f) vars[ind_var++] = z;
+            for (IloNumVar z : v.g) vars[ind_var++] = z;
+            for (IloNumVar z : v.alpha) vars[ind_var++] = z;
+            for (IloNumVar z : v.beta) vars[ind_var++] = z;
+            for (IloNumVar z : v.r) vars[ind_var++] = z;
+            for (IloNumVar z : v.q) vars[ind_var++] = z;
+            for (IloNumVar z : v.x) vars[ind_var++] = z;
+            for (IloNumVar z : v.s) vars[ind_var++] = z;
+            for (IloNumVar z : v.t) vars[ind_var++] = z;
+            for (IloNumVar z : v.y) vars[ind_var++] = z;
 
             RawSolution sol = new RawSolution(
                     vars,
@@ -362,7 +410,10 @@ public class ConnectCallbackSolver implements Closeable {
                     this.getValues(toArray(v.beta)),
                     this.getValues(toArray(v.r)),
                     this.getValues(toArray(v.q)),
-                    this.getValues(toArray(v.x))
+                    this.getValues(toArray(v.x)),
+                    this.getValues(toArray(v.s)),
+                    this.getValues(toArray(v.t)),
+                    this.getValues(toArray(v.y))
             );
 
             String oldStr = sol.toString();
@@ -380,13 +431,23 @@ public class ConnectCallbackSolver implements Closeable {
 
                 try {
                     try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
-                        try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
-                            for (int i = 0; i < sol.q.length; i++) {
-                                out_q.println(sol.q[i]);
-                            }
-                            for (int i = 0; i < sol.x.length; i++) {
-                                out_x.println(sol.x[i]);
-                            }
+                        for (int i = 0; i < sol.q.length; i++) {
+                            out_q.println(sol.q[i]);
+                        }
+                    }
+                    try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
+                        for (int i = 0; i < sol.x.length; i++) {
+                            out_x.println(sol.x[i]);
+                        }
+                    }
+                    try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
+                        for (int i = 0; i < sol.t.length; i++) {
+                            out_t.println(sol.t[i]);
+                        }
+                    }
+                    try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
+                        for (int i = 0; i < sol.y.length; i++) {
+                            out_y.println(sol.y[i]);
                         }
                     }
                     DrawUtils.readResultAndDrawAll("./answers/", "tmp_ans" + cnt_ans++, graph);
@@ -410,7 +471,7 @@ public class ConnectCallbackSolver implements Closeable {
         return cplex.solve();
     }
 
-    public void writeVarsToFiles(PrintWriter out_q, PrintWriter out_x) throws IloException {
+    public void writeVarsToFiles(PrintWriter out_q, PrintWriter out_x, PrintWriter out_t, PrintWriter out_y) throws IloException {
 //        System.out.println("obj = " + cplex.getObjValue());
 //        for (int i = 0; i < D; i++) {
 //            System.out.println(varNameOf("a", i) + " = " + cplex.getValue(v.a.get(i)));
@@ -421,6 +482,12 @@ public class ConnectCallbackSolver implements Closeable {
         }
         for (int i = 0; i < v.x.size(); i++) {
             out_x.println(cplex.getValue(v.x.get(i)));
+        }
+        for (int i = 0; i < v.t.size(); i++) {
+            out_t.println(cplex.getValue(v.t.get(i)));
+        }
+        for (int i = 0; i < v.y.size(); i++) {
+            out_y.println(cplex.getValue(v.y.get(i)));
         }
     }
 
