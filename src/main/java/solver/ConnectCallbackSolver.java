@@ -54,7 +54,7 @@ public class ConnectCallbackSolver implements Closeable {
     private final static int TIME_LIMIT = 20;
     private final static int L1NORM = 250;
     private final static double PHI = 0.01;
-    private final static double STEP = 0.01;
+    private final static double STEP = 0.001;
 
     // variables:
 
@@ -127,7 +127,7 @@ public class ConnectCallbackSolver implements Closeable {
     private void addObjective() throws IloException {
         IloNumExpr[] squares = new IloNumExpr[D];
         for (int i = 0; i < squares.length; i++) {
-            squares[i] = cplex.prod(v.a.get(i), v.a.get(i));
+            squares[i] = cplex.prod(cplex.prod(v.a.get(i), v.a.get(i)), N);
         }
         IloNumExpr[] err = new IloNumExpr[N];
         for (int i = 0; i < err.length; i++) {
@@ -141,7 +141,7 @@ public class ConnectCallbackSolver implements Closeable {
         double sum = 0;
         double[] squares = new double[sol.matrix.numCols()];
         for (int i = 0; i < squares.length; i++) {
-            squares[i] = sol.a[i] * sol.a[i];
+            squares[i] = sol.a[i] * sol.a[i] * sol.matrix.numRows();
             sum += squares[i];
         }
         double[] err = new double[sol.matrix.numRows()];
@@ -211,14 +211,14 @@ public class ConnectCallbackSolver implements Closeable {
 
         for (int num = 0; num < E; num++) {
             Pair<Integer, Integer> edge = graph.getEdges().get(num);
-            cplex.addLe(
-                    cplex.prod(PHI, v.x.get(num)),
-                    v.q.get(edge.first)
-            );
-            cplex.addLe(
-                    cplex.prod(PHI, v.x.get(num)),
-                    v.q.get(edge.second)
-            );
+//            cplex.addLe(
+//                    cplex.prod(PHI, v.x.get(num)),
+//                    v.q.get(edge.first)
+//            );
+//            cplex.addLe(
+//                    cplex.prod(PHI, v.x.get(num)),
+//                    v.q.get(edge.second)
+//            );
             cplex.addGe(
                     cplex.sum(INF, cplex.diff(v.q.get(edge.first), v.q.get(edge.second))),
                     cplex.sum(cplex.prod(INF, v.x.get(num)), STEP)
@@ -369,6 +369,7 @@ public class ConnectCallbackSolver implements Closeable {
 
                 double calcObj = calcObjective(sol);
 
+                log.println(cnt_ans);
                 log.println("before: " + oldStr);
                 log.println("after: " + newStr);
                 log.println();

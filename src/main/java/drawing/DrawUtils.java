@@ -40,7 +40,8 @@ public class DrawUtils {
             modules.add(new Pair<>(lines.get("ans_2").threshold(), p2));
             modules.add(new Pair<>(lines.get("ans_3").threshold(), p3));
 
-            graph.saveAsDOT("./answers/", title, x, q, modules, new Pair<>(1, 2));
+            for (int i = 0; i < 4; i++)
+                graph.saveAsDOT("./answers/", title, x, q, modules, new Pair<>(i, null));
 
             ROC.draw(title, lines);
 

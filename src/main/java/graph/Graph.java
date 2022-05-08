@@ -27,18 +27,29 @@ public record Graph(
     }
 
     public void saveAsDOT(String folder, String graphName, Double[] x, Double[] q, List<Pair<Double, Boolean[]>> modules, Pair<Integer, Integer> module) {
+        String moduleName = (module.second != null) ? module.toString().replaceAll("\\s", "") : module.first.toString();
         try (PrintWriter out = new PrintWriter(
-                folder + graphName + "_module" + module.toString().replaceAll("\\s", "") + ".dot", StandardCharsets.UTF_8
+                folder + graphName + "_module" + moduleName + ".dot", StandardCharsets.UTF_8
         )) {
             out.println("digraph " + graphName + " {");
             namingMap.forEach((k, v) -> {
-                Boolean isPredict1 = (q[k] > modules.get(module.first).first);
-                Boolean isTrue1 = (modules.get(module.first).second[k]);
-                Boolean isPredict2 = (q[k] > modules.get(module.second).first);
-                Boolean isTrue2 = (modules.get(module.second).second[k]);
 
                 String color;
                 String shape;
+
+                Boolean isPredict1 = (q[k] > modules.get(module.first).first);
+                Boolean isTrue1 = (modules.get(module.first).second[k]);
+
+                Boolean isPredict2;
+                Boolean isTrue2;
+                if (module.second != null) {
+                    isPredict2 = (q[k] > modules.get(module.second).first);
+                    isTrue2 = (modules.get(module.second).second[k]);
+                } else {
+                    isPredict2 = isPredict1;
+                    isTrue2 = isTrue1;
+                }
+
                 if (isTrue1 && isTrue2) {
                     shape = "doubleoctagon";
                 } else if (isTrue1) {
@@ -52,42 +63,42 @@ public record Graph(
                 switch (shape) {
                     case "doubleoctagon":
                         if (isPredict1 && isPredict2) {
-                            color = "green";
+                            color = "darkgreen";
                         } else if (isPredict1) {
-                            color = "yellowgreen";
+                            color = "gold";
                         } else if (isPredict2) {
-                            color = "greenyellow";
+                            color = "orange";
                         } else {
                             color = "red";
                         }
                         break;
                     case "ellipse":
                         if (isPredict1 && isPredict2) {
-                            color = "aqua";
+                            color = "aquamarine";
                         } else if (isPredict1) {
                             color = "green";
                         } else if (isPredict2) {
                             color = "yellow";
                         } else {
-                            color = "red";
+                            color = "pink";
                         }
                         break;
                     case "octagon":
                         if (isPredict1 && isPredict2) {
-                            color = "aqua";
+                            color = "aquamarine";
                         } else if (isPredict1) {
                             color = "yellow";
                         } else if (isPredict2) {
                             color = "green";
                         } else {
-                            color = "red";
+                            color = "pink";
                         }
                         break;
                     case "box":
                         if (isPredict1 && isPredict2) {
                             color = "blue";
                         } else if (isPredict1) {
-                            color = "cornflowerblue";
+                            color = "aqua";
                         } else if (isPredict2) {
                             color = "darkcyan";
                         } else {
