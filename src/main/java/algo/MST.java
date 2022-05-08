@@ -65,23 +65,23 @@ public class MST {
     }
 
     private static void main_solve(List<List<Pair<Integer, Long>>> g, double[] x, double[] q, double[] r, double STEP) {
-//        double q_max = -1;
-//        int root = -1;
-//        for (int i = 0; i < q.length; i++) {
-//            if (q[i] > q_max) {
-//                q_max = q[i];
-//                root = i;
-//            }
-//        }
-
-        double r_max = -1;
+        double q_max = -1;
         int root = -1;
-        for (int i = 0; i < r.length; i++) {
-            if (r[i] > r_max) {
-                r_max = r[i];
+        for (int i = 0; i < q.length; i++) {
+            if (q[i] > q_max) {
+                q_max = q[i];
                 root = i;
             }
         }
+
+//        double r_max = -1;
+//        int root = -1;
+//        for (int i = 0; i < r.length; i++) {
+//            if (r[i] > r_max) {
+//                r_max = r[i];
+//                root = i;
+//            }
+//        }
 
         check_mst(g, q, root);
 

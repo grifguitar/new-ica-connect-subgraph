@@ -18,6 +18,36 @@ import java.util.TreeMap;
 public class DrawUtils {
     private static final double EPS = 1e-6;
 
+    public static void compareNetClustWithTrueAns(String folder, String title) {
+        try {
+            Boolean[] p0 = readAsBooleanArray(folder + "p_ans_0.txt");
+            Boolean[] p1 = readAsBooleanArray(folder + "p_ans_1.txt");
+            Boolean[] p2 = readAsBooleanArray(folder + "p_ans_2.txt");
+            Boolean[] p3 = readAsBooleanArray(folder + "p_ans_3.txt");
+
+            Double[] n0 = readAsDoubleArray(folder + "net_cl_ans_0.txt");
+            Double[] n1 = readAsDoubleArray(folder + "net_cl_ans_1.txt");
+            Double[] n2 = readAsDoubleArray(folder + "net_cl_ans_2.txt");
+            Double[] n3 = readAsDoubleArray(folder + "net_cl_ans_3.txt");
+            Double[] n4 = readAsDoubleArray(folder + "net_cl_ans_4.txt");
+            List<Double[]> nn = List.of(n0, n1, n2, n3, n4);
+
+            for (int i = 0; i < nn.size(); i++) {
+                Map<String, ROC.ROCLine> lines = new TreeMap<>();
+
+                lines.put("nc" + i + "_ans_0", ROC.getLine(nn.get(i), p0));
+                lines.put("nc" + i + "_ans_1", ROC.getLine(nn.get(i), p1));
+                lines.put("nc" + i + "_ans_2", ROC.getLine(nn.get(i), p2));
+                lines.put("nc" + i + "_ans_3", ROC.getLine(nn.get(i), p3));
+
+                ROC.draw(title + i, lines);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void readResultAndDrawAll(String folder, String title, Graph graph) {
         try {
             Double[] q = readAsDoubleArray(folder + "q.txt");
