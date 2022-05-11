@@ -450,7 +450,7 @@ public class ConnectCallbackSolver implements Closeable {
                             out_y.println(sol.y[i]);
                         }
                     }
-                    DrawUtils.readResultAndDrawAll("./answers/", "tmp_ans" + cnt_ans++, graph);
+                    DrawUtils.newDraw("./answers/", "tmp_ans" + cnt_ans++, graph);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

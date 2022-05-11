@@ -48,6 +48,55 @@ public class DrawUtils {
         }
     }
 
+    public static void newDraw(String folder, String title, Graph graph) {
+        try {
+            Double[] clust_size = readAsDoubleArray(folder + "0_clust_size.txt");
+            Double[] module_size = readAsDoubleArray(folder + "0_module_size.txt");
+            Double[] q = readAsDoubleArray(folder + "q.txt");
+            Double[] x = readAsDoubleArray(folder + "x.txt");
+            Double[] t = readAsDoubleArray(folder + "t.txt");
+            Double[] y = readAsDoubleArray(folder + "y.txt");
+
+            List<Double[]> clusters = new ArrayList<>();
+            for (int cnt = 1; cnt <= 3; cnt++) {
+                for (int clustNum = 0; clustNum < clust_size[cnt - 1]; clustNum++) {
+                    Double[] n = readAsDoubleArray(folder + cnt + "_nc_ans_" + clustNum + ".txt");
+                    clusters.add(n);
+                }
+            }
+
+            for (int modNum = 0; modNum < module_size[0]; modNum++) {
+                Boolean[] p = readAsBooleanArray(folder + "p_ans_" + modNum + ".txt");
+
+                Map<String, ROC.ROCLine> lines = new TreeMap<>();
+
+                int ind_0 = 0;
+                for (int cnt = 1; cnt <= 3; cnt++) {
+                    String base;
+                    if (cnt == 1) {
+                        base = "0.25";
+                    } else if (cnt == 2) {
+                        base = "0.4";
+                    } else {
+                        base = "0.5";
+                    }
+                    for (int clustNum = 0; clustNum < clust_size[cnt - 1]; clustNum++) {
+                        Double[] n = clusters.get(ind_0++);
+                        lines.put("nc_" + clustNum + ":" + base, ROC.getLine(n, p));
+                    }
+                }
+
+                lines.put("x", ROC.getLine(q, p));
+                lines.put("y", ROC.getLine(t, p));
+
+                ROC.draw(title + "_module_" + modNum, lines);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void readResultAndDrawAll(String folder, String title, Graph graph) {
         try {
             Double[] q = readAsDoubleArray(folder + "q.txt");

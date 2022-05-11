@@ -135,7 +135,8 @@ public class ROC {
                 lines,
                 xAxisData,
                 yAxisData,
-                List.of(diagonal)
+                null
+                /*List.of(diagonal)*/
         );
     }
 }
