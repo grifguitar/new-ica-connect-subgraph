@@ -4,9 +4,11 @@ import graph.Graph;
 import io.GraphIO;
 import io.NewMatrixIO;
 import solver.ConnectCallbackSolver;
+import solver.SimpleCallbackSolver;
 import utils.Matrix;
 import utils.Pair;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -17,7 +19,8 @@ public class Main {
     private static final String OUT_N = "./answers/p_ans_";
     private static final String IN = "./in_data/";
     private static final String LOGS = "./logs/";
-    private static final String FILENAME = "6_test_small_1";
+    private static final String FILENAME = "2_test_small_05";
+    private static final int ANS_FILES_COUNT = 3;
 
     public static void main(String[] args) {
         try {
@@ -27,7 +30,7 @@ public class Main {
             Map<Integer, String> revNamingMapAnsNetCl = new HashMap<>();
 
             List<Integer> sizes = new ArrayList<>();
-            for (int cnt = 1; cnt <= 3; cnt++) {
+            for (int cnt = 1; cnt <= ANS_FILES_COUNT; cnt++) {
 
                 namingMapAnsNetCl = new HashMap<>();
                 revNamingMapAnsNetCl = new HashMap<>();
@@ -122,19 +125,43 @@ public class Main {
                         }
                     }
                 }
-                DrawUtils.newDraw("./answers/", "total_ans", graph);
             } else {
                 System.out.println("ConnectCallbackSolver: integer results not found!");
             }
 
             solver.close();
 
+            SimpleCallbackSolver simpleCallbackSolver = new SimpleCallbackSolver(matrix);
+
+            if (simpleCallbackSolver.solve()) {
+                try (PrintWriter out_f = new PrintWriter("./answers/ica_f.txt")) {
+                    try (PrintWriter out_g = new PrintWriter("./answers/ica_g.txt")) {
+                        simpleCallbackSolver.printResults(out_f, out_g);
+                    }
+                }
+            }
+
+            simpleCallbackSolver.close();
+
+            DrawUtils.newDraw("./answers/", FILENAME, graph);
+
             //DrawUtils.compareNetClustWithTrueAns("./answers/", "net_clust");
 
             DrawAPI.run();
 
+            deleteAllFiles("./answers/");
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static void deleteAllFiles(String path) {
+        for (File myFile : Objects.requireNonNull(new File(path).listFiles()))
+            if (myFile.isFile()) {
+                if (!myFile.delete()) {
+                    throw new RuntimeException("not delete files in folder");
+                }
+            }
     }
 }

@@ -3,20 +3,16 @@ package drawing;
 import graph.Graph;
 import utils.Pair;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * static class
  */
 public class DrawUtils {
     private static final double EPS = 1e-6;
+    private static final int ANS_FILES_COUNT = 3;
 
     public static void compareNetClustWithTrueAns(String folder, String title) {
         try {
@@ -49,52 +45,101 @@ public class DrawUtils {
     }
 
     public static void newDraw(String folder, String title, Graph graph) {
-        try {
-            Double[] clust_size = readAsDoubleArray(folder + "0_clust_size.txt");
-            Double[] module_size = readAsDoubleArray(folder + "0_module_size.txt");
-            Double[] q = readAsDoubleArray(folder + "q.txt");
-            Double[] x = readAsDoubleArray(folder + "x.txt");
-            Double[] t = readAsDoubleArray(folder + "t.txt");
-            Double[] y = readAsDoubleArray(folder + "y.txt");
+        try (PrintWriter pw = new PrintWriter(new FileOutputStream("./aggregate/tmp_metrics_" + title + ".txt", true))) {
+            try (PrintWriter pw_out = new PrintWriter(new FileOutputStream("./aggregate/out_metrics" + title + ".txt", true))) {
+                Double[] clust_size = readAsDoubleArray(folder + "0_clust_size.txt");
+                Double[] module_size = readAsDoubleArray(folder + "0_module_size.txt");
+                Double[] q = readAsDoubleArray(folder + "q.txt");
+                Double[] x = readAsDoubleArray(folder + "x.txt");
+                Double[] t = readAsDoubleArray(folder + "t.txt");
+                Double[] y = readAsDoubleArray(folder + "y.txt");
 
-            List<Double[]> clusters = new ArrayList<>();
-            for (int cnt = 1; cnt <= 3; cnt++) {
-                for (int clustNum = 0; clustNum < clust_size[cnt - 1]; clustNum++) {
-                    Double[] n = readAsDoubleArray(folder + cnt + "_nc_ans_" + clustNum + ".txt");
-                    clusters.add(n);
-                }
-            }
+                Double[] ica_f = readAsDoubleArray(folder + "ica_f.txt");
+                Double[] ica_g = readAsDoubleArray(folder + "ica_g.txt");
 
-            for (int modNum = 0; modNum < module_size[0]; modNum++) {
-                Boolean[] p = readAsBooleanArray(folder + "p_ans_" + modNum + ".txt");
-
-                Map<String, ROC.ROCLine> lines = new TreeMap<>();
-
-                int ind_0 = 0;
-                for (int cnt = 1; cnt <= 3; cnt++) {
-                    String base;
-                    if (cnt == 1) {
-                        base = "0.25";
-                    } else if (cnt == 2) {
-                        base = "0.4";
-                    } else {
-                        base = "0.5";
-                    }
+                List<Double[]> clusters = new ArrayList<>();
+                for (int cnt = 1; cnt <= ANS_FILES_COUNT; cnt++) {
                     for (int clustNum = 0; clustNum < clust_size[cnt - 1]; clustNum++) {
-                        Double[] n = clusters.get(ind_0++);
-                        lines.put("nc_" + clustNum + ":" + base, ROC.getLine(n, p));
+                        Double[] n = readAsDoubleArray(folder + cnt + "_nc_ans_" + clustNum + ".txt");
+                        clusters.add(n);
                     }
                 }
 
-                lines.put("x", ROC.getLine(q, p));
-                lines.put("y", ROC.getLine(t, p));
+                for (int modNum = 0; modNum < module_size[0]; modNum++) {
+                    Boolean[] p = readAsBooleanArray(folder + "p_ans_" + modNum + ".txt");
 
-                ROC.draw(title + "_module_" + modNum, lines);
+                    Map<String, ROC.ROCLine> lines = new TreeMap<>();
+
+                    int ind_0 = 0;
+                    double[] best_f1score_clust = new double[ANS_FILES_COUNT + 1];
+                    for (int cnt = 1; cnt <= ANS_FILES_COUNT; cnt++) {
+                        String base;
+                        if (cnt == 1) {
+                            base = "0.25";
+                        } else if (cnt == 2) {
+                            base = "0.4";
+                        } else {
+                            base = "0.5";
+                        }
+                        for (int clustNum = 0; clustNum < clust_size[cnt - 1]; clustNum++) {
+                            Double[] n = clusters.get(ind_0++);
+                            ROC.ROCLine line = ROC.getLine(n, p);
+                            double[] metrics = calcMetrics(n, p, 1 - EPS);
+                            if (metrics[2] > best_f1score_clust[cnt]) {
+                                best_f1score_clust[cnt] = metrics[2];
+                            }
+                            pw.println(title + "_module_" + modNum + "_nc_" + clustNum + ":" + base + ", metrics = " + Arrays.toString(metrics));
+                            lines.put("nc_" + clustNum + ":" + base, line);
+                        }
+                    }
+                    for (int cnt = 1; cnt <= ANS_FILES_COUNT; cnt++) {
+                        String base;
+                        if (cnt == 1) {
+                            base = "0.25";
+                        } else if (cnt == 2) {
+                            base = "0.4";
+                        } else {
+                            base = "0.5";
+                        }
+                        pw_out.println(title + "_module_" + modNum + "_nc_" + base + ", best_f1score = " + best_f1score_clust[cnt]);
+                    }
+
+                    ROC.ROCLine line_x = ROC.getLine(q, p);
+                    ROC.ROCLine line_y = ROC.getLine(t, p);
+                    double[] m_x = calcMetrics(q, p, line_x.threshold());
+                    double[] m_y = calcMetrics(t, p, line_y.threshold());
+                    pw.println(title + "_module_" + modNum + "_x" + ", metrics = " + Arrays.toString(m_x));
+                    pw.println(title + "_module_" + modNum + "_y" + ", metrics = " + Arrays.toString(m_y));
+                    pw_out.println(title + "_module_" + modNum + "_x" + ", f1score = " + m_x[2]);
+                    pw_out.println(title + "_module_" + modNum + "_y" + ", f1score = " + m_y[2]);
+
+                    lines.put("x", line_x);
+                    lines.put("y", line_y);
+
+                    lines.put("z1", ROC.getLine(ica_f, p));
+                    lines.put("z2", ROC.getLine(ica_g, p));
+
+                    ROC.draw(title + "_module_" + modNum, lines);
+                }
+
             }
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static double[] calcMetrics(Double[] predictions, Boolean[] labels, double threshold) {
+        double TP = 0, TN = 0, FP = 0, FN = 0, precision = 0, recall = 0, f1score = 0;
+        for (int i = 0; i < labels.length; i++) {
+            if (predictions[i] >= threshold && labels[i]) TP += 1;
+            if (predictions[i] >= threshold && !labels[i]) FP += 1;
+            if (predictions[i] < threshold && labels[i]) FN += 1;
+            if (predictions[i] < threshold && !labels[i]) TN += 1;
+        }
+        precision = TP / (TP + FP);
+        recall = TP / (TP + FN);
+        f1score = 2 * precision * recall / (precision + recall);
+        return new double[]{precision, recall, f1score};
     }
 
     public static void readResultAndDrawAll(String folder, String title, Graph graph) {

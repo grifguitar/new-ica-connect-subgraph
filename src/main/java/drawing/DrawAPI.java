@@ -14,7 +14,9 @@ import utils.Pair;
 
 import javax.imageio.ImageIO;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +55,11 @@ public class DrawAPI extends Application {
         // nothing
     }
 
+    private static double calcSquare(double x, double y) {
+        if (x < 0 || x > 1 || y < 0 || y > 1) return -1;
+        return (x * y / 2.0) + ((1.0 - x) * (1.0 - y) / 2.0) + (1.0 - x) * y;
+    }
+
     private record Window(
             String title,
             Map<String, ROC.ROCLine> lines,
@@ -86,14 +93,34 @@ public class DrawAPI extends Application {
                 lineChart.getData().add(series);
             }
 
-            for (String name : lines.keySet()) {
-                if (!name.startsWith("nc_")) {
+            for (String other : lines.keySet()) {
+                if (!other.startsWith("nc_")) {
                     continue;
                 }
-                assert lines.get(name).line().size() == 3;
+                assert lines.get(other).line().size() == 3;
                 int ind = 1;
                 XYChart.Series<Number, Number> series = new XYChart.Series<>();
-                series.setName(name + String.format(" {%.2f} ", lines.get(name).auc_roc()));
+                series.setName(other + String.format(" {%.2f} ", lines.get(other).auc_roc()));
+                try (PrintWriter pw = new PrintWriter(new FileOutputStream("./aggregate/f_" + title + ".txt", true))) {
+                    double x_d = (double) lines.get(other).line().get(ind).first;
+                    double y_d = (double) lines.get(other).line().get(ind).second;
+                    pw.print(other + " " + String.format("%.3f", x_d) + " " + String.format("%.3f", y_d) + " ");
+                    for (String name : lines.keySet()) {
+                        if (name.startsWith("x") || name.startsWith("y")) {
+                            int i0;
+                            double x_x = -1, y_y = -1;
+                            for (i0 = 0; i0 < lines.get(name).line().size(); i0++) {
+                                x_x = (double) lines.get(name).line().get(i0).first;
+                                y_y = (double) lines.get(name).line().get(i0).second;
+                                if (x_x >= x_d) break;
+                            }
+                            pw.print(name + " " + String.format("%.3f", x_x) + " " + String.format("%.3f", y_y) + " ");
+                        }
+                    }
+                    pw.println();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 double small = 0.004;
                 for (Pair<Double, Double> iter : List.of(
                         new Pair<>(-small, small),
@@ -102,8 +129,8 @@ public class DrawAPI extends Application {
                         new Pair<>(-small, -small))
                 ) {
                     series.getData().add(new XYChart.Data<>(
-                            ((double) lines.get(name).line().get(ind).first + iter.first),
-                            ((double) lines.get(name).line().get(ind).second + iter.second)
+                            ((double) lines.get(other).line().get(ind).first + iter.first),
+                            ((double) lines.get(other).line().get(ind).second + iter.second)
                     ));
                 }
                 lineChart.getData().add(series);

@@ -49,7 +49,7 @@ public class ROC {
         double stepX = 1.0 / (double) w;
         double stepY = 1.0 / (double) h;
 
-        double max_height = -1;
+        //double max_height = -1;
         int threshold_index = -1;
         double threshold = -1e6;
 
@@ -74,12 +74,17 @@ public class ROC {
             x += stepX * b;
             points.add(new Pair<>(x, y));
 
-            double curr_height = (y - x) / Math.sqrt(2.0);
-            if (curr_height >= max_height) {
+            if (x >= 0.05 && threshold_index == -1) {
                 threshold_index = points.size() - 1;
-                max_height = curr_height;
                 threshold = list.get(threshold_index).first;
             }
+
+            //double curr_height = (y - x) / Math.sqrt(2.0);
+            //if (curr_height >= max_height) {
+            //    threshold_index = points.size() - 1;
+            //    max_height = curr_height;
+            //    threshold = list.get(threshold_index).first;
+            //}
 
             i = cnt;
         }

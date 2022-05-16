@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class SimpleCallbackSolver implements Closeable {
     @Override
@@ -53,8 +52,6 @@ public class SimpleCallbackSolver implements Closeable {
 
     private final IloCplex cplex;
 
-    private final AtomicReference<Double> lb;
-
     // constructor:
 
     public SimpleCallbackSolver(Matrix matrix) throws IloException, IOException {
@@ -69,8 +66,6 @@ public class SimpleCallbackSolver implements Closeable {
         this.cplex = new IloCplex();
         this.cplex.setParam(IloCplex.Param.OptimalityTarget, IloCplex.OptimalityTarget.OptimalGlobal);
         this.cplex.setParam(IloCplex.Param.TimeLimit, TIME_LIMIT);
-
-        this.lb = new AtomicReference<>(-1e5);
 
         addVariables();
         addObjective();
@@ -256,12 +251,9 @@ public class SimpleCallbackSolver implements Closeable {
 
                 double calcObj = calcObjective(sol);
 
-                if (calcObj > lb.get()) {
-                    lb.set(calcObj);
-                    log.println("before: " + oldStr);
-                    log.println("after: " + newStr);
-                    log.println();
-                }
+                log.println("before: " + oldStr);
+                log.println("after: " + newStr);
+                log.println();
 
                 if (calcObj >= getIncumbentObjValue()) {
                     //System.out.println("found new solution: " + calcObj);
@@ -279,15 +271,12 @@ public class SimpleCallbackSolver implements Closeable {
         return cplex.solve();
     }
 
-    public void printResults(PrintWriter out) throws IloException {
-        System.out.println("obj = " + cplex.getObjValue());
-        for (int i = 0; i < D; i++) {
-            System.out.println(varNameOf("a", i) + " = " + cplex.getValue(v.a.get(i)));
+    public void printResults(PrintWriter out_f, PrintWriter out_g) throws IloException {
+        for (int i = 0; i < v.f.size(); i++) {
+            out_f.println(cplex.getValue(v.f.get(i)));
         }
-        for (int i = 0; i < N; i++) {
-            //System.out.println(varNameOf("p", i) + " = " + cplex.getValue(var.P.get(i)));
-            double p0 = cplex.getValue(v.g.get(i)) - cplex.getValue(v.f.get(i));
-            out.println(p0);
+        for (int i = 0; i < v.g.size(); i++) {
+            out_g.println(cplex.getValue(v.g.get(i)));
         }
     }
 
