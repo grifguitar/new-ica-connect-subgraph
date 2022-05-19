@@ -61,8 +61,8 @@ public class ConnectCallbackSolver implements Closeable {
     // constants:
 
     private final static float INF = 1000;
-    private final static int TIME_LIMIT = 20;
-    private final static int L1NORM = 250;
+    private final static int TIME_LIMIT = 1000;
+    private final static int L1NORM = 9170;
     private final static double STEP = 0.001;
 
     // variables:

@@ -8,18 +8,19 @@ import solver.SimpleCallbackSolver;
 import utils.Matrix;
 import utils.Pair;
 
-import java.io.File;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static analysis.DataAnalysis.whitening;
 
 public class Main {
     private static final String OUT_FOLDER = "./answers/";
     private static final String OUT_N = "./answers/p_ans_";
-    private static final String IN = "./in_data/";
+    private static final String IN = "./real_data/";
     private static final String LOGS = "./logs/";
-    private static final String FILENAME = "2_test_small_05";
+    private static final String FILENAME = "real_test_05";
     private static final int ANS_FILES_COUNT = 3;
 
     public static void main(String[] args) {
@@ -52,6 +53,34 @@ public class Main {
                     out.println(size);
             }
 
+            // read matrix
+
+            Map<String, Integer> namingMap = new HashMap<>();
+            Map<Integer, String> revNamingMap = new HashMap<>();
+
+            Matrix matrix = NewMatrixIO.read(IN + FILENAME + ".mtx", true, namingMap, revNamingMap);
+
+            // read hyp ans
+
+            try (PrintWriter ans_out = new PrintWriter(IN + FILENAME + ".ans", StandardCharsets.UTF_8)) {
+
+                BufferedReader arg0 = new BufferedReader(new FileReader(IN + FILENAME + ".hyp", StandardCharsets.UTF_8));
+                Set<String> hyp_set = arg0.lines().collect(Collectors.toSet());
+
+                Scanner scanner1 = new Scanner(new FileReader(IN + FILENAME + ".mtx", StandardCharsets.UTF_8));
+                while (scanner1.hasNextLine()) {
+                    String[] tokens = scanner1.nextLine().split("\\s");
+                    if (hyp_set.contains(tokens[0])) {
+                        ans_out.println(tokens[0] + "\t" + 1);
+                    } else {
+                        ans_out.println(tokens[0] + "\t" + 0);
+                    }
+                }
+
+            } catch (Exception e) {
+                throw new RuntimeException();
+            }
+
             // create true answers file from .ans
 
             Map<String, Integer> namingMapAns = new HashMap<>();
@@ -69,13 +98,6 @@ public class Main {
                     }
                 }
             }
-
-            // read matrix
-
-            Map<String, Integer> namingMap = new HashMap<>();
-            Map<Integer, String> revNamingMap = new HashMap<>();
-
-            Matrix matrix = NewMatrixIO.read(IN + FILENAME + ".mtx", true, namingMap, revNamingMap);
 
             // read graph
 
