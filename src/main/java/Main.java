@@ -22,6 +22,7 @@ public class Main {
     private static final String LOGS = "./logs/";
     private static final String FILENAME = "real_test_05";
     private static final int ANS_FILES_COUNT = 3;
+    private static final boolean REAL_DATA = true;
 
     public static void main(String[] args) {
         try {
@@ -62,23 +63,25 @@ public class Main {
 
             // read hyp ans
 
-            try (PrintWriter ans_out = new PrintWriter(IN + FILENAME + ".ans", StandardCharsets.UTF_8)) {
+            if (REAL_DATA) {
+                try (PrintWriter ans_out = new PrintWriter(IN + FILENAME + ".ans", StandardCharsets.UTF_8)) {
 
-                BufferedReader arg0 = new BufferedReader(new FileReader(IN + FILENAME + ".hyp", StandardCharsets.UTF_8));
-                Set<String> hyp_set = arg0.lines().collect(Collectors.toSet());
+                    BufferedReader arg0 = new BufferedReader(new FileReader(IN + FILENAME + ".hyp", StandardCharsets.UTF_8));
+                    Set<String> hyp_set = arg0.lines().collect(Collectors.toSet());
 
-                Scanner scanner1 = new Scanner(new FileReader(IN + FILENAME + ".mtx", StandardCharsets.UTF_8));
-                while (scanner1.hasNextLine()) {
-                    String[] tokens = scanner1.nextLine().split("\\s");
-                    if (hyp_set.contains(tokens[0])) {
-                        ans_out.println(tokens[0] + "\t" + 1);
-                    } else {
-                        ans_out.println(tokens[0] + "\t" + 0);
+                    Scanner scanner1 = new Scanner(new FileReader(IN + FILENAME + ".mtx", StandardCharsets.UTF_8));
+                    while (scanner1.hasNextLine()) {
+                        String[] tokens = scanner1.nextLine().split("\\s");
+                        if (hyp_set.contains(tokens[0])) {
+                            ans_out.println(tokens[0] + "\t" + 1);
+                        } else {
+                            ans_out.println(tokens[0] + "\t" + 0);
+                        }
                     }
-                }
 
-            } catch (Exception e) {
-                throw new RuntimeException();
+                } catch (Exception e) {
+                    throw new RuntimeException();
+                }
             }
 
             // create true answers file from .ans
@@ -134,31 +137,35 @@ public class Main {
 
             // solve
 
-            ConnectCallbackSolver solver = new ConnectCallbackSolver(matrix, graph);
-            //SimpleSolver solver = new SimpleSolver(matrix);
+//            ConnectCallbackSolver solver = new ConnectCallbackSolver(matrix, graph);
+//            //SimpleSolver solver = new SimpleSolver(matrix);
+//
+//            if (solver.solve()) {
+//                try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
+//                    try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
+//                        try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
+//                            try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
+//                                solver.writeVarsToFiles(out_q, out_x, out_t, out_y);
+//                            }
+//                        }
+//                    }
+//                }
+//            } else {
+//                System.out.println("ConnectCallbackSolver: integer results not found!");
+//            }
+//
+//            solver.close();
 
-            if (solver.solve()) {
+            SimpleCallbackSolver simpleCallbackSolver = new SimpleCallbackSolver(matrix, graph, 1000);
+
+            if (simpleCallbackSolver.solve()) {
                 try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
                     try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
                         try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
                             try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
-                                solver.writeVarsToFiles(out_q, out_x, out_t, out_y);
+                                simpleCallbackSolver.writeVarsToFiles(out_q, out_x, out_t, out_y);
                             }
                         }
-                    }
-                }
-            } else {
-                System.out.println("ConnectCallbackSolver: integer results not found!");
-            }
-
-            solver.close();
-
-            SimpleCallbackSolver simpleCallbackSolver = new SimpleCallbackSolver(matrix);
-
-            if (simpleCallbackSolver.solve()) {
-                try (PrintWriter out_f = new PrintWriter("./answers/ica_f.txt")) {
-                    try (PrintWriter out_g = new PrintWriter("./answers/ica_g.txt")) {
-                        simpleCallbackSolver.printResults(out_f, out_g);
                     }
                 }
             }

@@ -1,8 +1,12 @@
 package solver;
 
+import algo.MST;
+import drawing.DrawUtils;
+import graph.Graph;
 import ilog.concert.*;
 import ilog.cplex.*;
 import utils.Matrix;
+import utils.Pair;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -37,8 +41,6 @@ public class SimpleCallbackSolver implements Closeable {
     // constants:
 
     private final static float INF = 1000;
-    private final static int TIME_LIMIT = 20;
-    private final static int L1NORM = 250;
 
     // variables:
 
@@ -48,18 +50,31 @@ public class SimpleCallbackSolver implements Closeable {
     private final int D;
     private final int N;
 
+    private final Graph graph;
+    private final int E;
+
     private final Variables v;
+    private RawSolution best;
 
     private final IloCplex cplex;
 
+    private int cnt_ans = 0;
+
     // constructor:
 
-    public SimpleCallbackSolver(Matrix matrix) throws IloException, IOException {
+    public SimpleCallbackSolver(Matrix matrix, Graph graph, int TIME_LIMIT) throws IloException, IOException {
         this.log = new PrintWriter("./logs/simple_callback_solver.txt", StandardCharsets.UTF_8);
 
         this.matrix = matrix;
         this.N = matrix.numRows();
         this.D = matrix.numCols();
+
+        this.graph = graph;
+        this.E = graph.getEdges().size();
+
+        if (graph.getNodesCount() != N) {
+            throw new RuntimeException("vertex count not equals with row count");
+        }
 
         this.v = new Variables();
 
@@ -118,7 +133,7 @@ public class SimpleCallbackSolver implements Closeable {
         for (int i = 0; i < l1normP.length; i++) {
             l1normP[i] = cplex.sum(v.f.get(i), v.g.get(i));
         }
-        cplex.addEq(cplex.sum(l1normP), L1NORM);
+        cplex.addEq(cplex.sum(l1normP), N);
 
         for (int i = 0; i < N; i++) {
             cplex.addLe(v.f.get(i), cplex.prod(v.alpha.get(i), INF));
@@ -136,11 +151,18 @@ public class SimpleCallbackSolver implements Closeable {
     private record RawSolution(
             IloNumVar[] vars,
             Matrix matrix,
+            Graph graph,
             double[] a,
             double[] f,
             double[] g,
             double[] alpha,
-            double[] beta
+            double[] beta,
+            double[] r,
+            double[] q,
+            double[] x,
+            double[] s,
+            double[] t,
+            double[] y
     ) {
         private static final double eps = 1e-6;
 
@@ -154,8 +176,8 @@ public class SimpleCallbackSolver implements Closeable {
             }
 
             double cff = 1;
-            if (Math.abs(l1norm - L1NORM) > eps) {
-                cff = L1NORM / l1norm;
+            if (Math.abs(l1norm - matrix.numRows()) > eps) {
+                cff = matrix.numRows() / l1norm;
             }
 
             for (int i = 0; i < a.length; i++) {
@@ -178,9 +200,31 @@ public class SimpleCallbackSolver implements Closeable {
                 }
             }
 
-            if (Math.abs(calcL1Norm(new_p) - L1NORM) > eps) {
+            if (Math.abs(calcL1Norm(new_p) - matrix.numRows()) > eps) {
                 throw new RuntimeException("unexpected l1norm after adapt");
             }
+
+            for (int i = 0; i < f.length; i++) {
+                q[i] = f[i];
+            }
+
+            for (int i = 0; i < g.length; i++) {
+                t[i] = g[i];
+            }
+
+            for (int i = 0; i < graph.getEdges().size(); i++) {
+                Pair<Integer, Integer> edge = graph.getEdges().get(i);
+                x[i] = q[edge.first] * q[edge.second];
+            }
+
+            for (int i = 0; i < graph.getEdges().size(); i++) {
+                Pair<Integer, Integer> edge = graph.getEdges().get(i);
+                y[i] = t[edge.first] * t[edge.second];
+            }
+
+            MST.solve(graph, x, q, r, 0);
+
+            MST.solve(graph, y, t, s, 0);
 
             return true;
         }
@@ -218,6 +262,12 @@ public class SimpleCallbackSolver implements Closeable {
                     "\n| g = " + Arrays.toString(g) +
                     "\n| alpha = " + Arrays.toString(alpha) +
                     "\n| beta = " + Arrays.toString(beta) +
+                    "\n| r = " + Arrays.toString(r) +
+                    "\n| q = " + Arrays.toString(q) +
+                    "\n| x = " + Arrays.toString(x) +
+                    "\n| s = " + Arrays.toString(s) +
+                    "\n| t = " + Arrays.toString(t) +
+                    "\n| y = " + Arrays.toString(y) +
                     "\n}";
         }
     }
@@ -236,11 +286,18 @@ public class SimpleCallbackSolver implements Closeable {
             RawSolution sol = new RawSolution(
                     vars,
                     matrix,
+                    graph,
                     this.getValues(toArray(v.a)),
                     this.getValues(toArray(v.f)),
                     this.getValues(toArray(v.g)),
                     this.getValues(toArray(v.alpha)),
-                    this.getValues(toArray(v.beta))
+                    this.getValues(toArray(v.beta)),
+                    new double[N],
+                    new double[N],
+                    new double[E],
+                    new double[N],
+                    new double[N],
+                    new double[E]
             );
 
             String oldStr = sol.toString();
@@ -251,9 +308,42 @@ public class SimpleCallbackSolver implements Closeable {
 
                 double calcObj = calcObjective(sol);
 
+                cnt_ans++;
+
+                log.println(cnt_ans);
                 log.println("before: " + oldStr);
                 log.println("after: " + newStr);
                 log.println();
+
+                try {
+                    try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
+                        for (int i = 0; i < sol.q.length; i++) {
+                            out_q.println(sol.q[i]);
+                        }
+                    }
+                    try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
+                        for (int i = 0; i < sol.x.length; i++) {
+                            out_x.println(sol.x[i]);
+                        }
+                    }
+                    try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
+                        for (int i = 0; i < sol.t.length; i++) {
+                            out_t.println(sol.t[i]);
+                        }
+                    }
+                    try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
+                        for (int i = 0; i < sol.y.length; i++) {
+                            out_y.println(sol.y[i]);
+                        }
+                    }
+                    //DrawUtils.newDraw("./answers/", "tmp_ans" + cnt_ans, graph);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
+                if (best == null || calcObj >= calcObjective(best)) {
+                    best = sol;
+                }
 
                 if (calcObj >= getIncumbentObjValue()) {
                     //System.out.println("found new solution: " + calcObj);
@@ -271,12 +361,23 @@ public class SimpleCallbackSolver implements Closeable {
         return cplex.solve();
     }
 
-    public void printResults(PrintWriter out_f, PrintWriter out_g) throws IloException {
-        for (int i = 0; i < v.f.size(); i++) {
-            out_f.println(cplex.getValue(v.f.get(i)));
+    public void writeVarsToFiles(PrintWriter out_q, PrintWriter out_x, PrintWriter out_t, PrintWriter out_y) throws IloException {
+        System.out.println("obj = " + cplex.getObjValue());
+        for (int i = 0; i < D; i++) {
+            System.out.println(varNameOf("a", i) + " = " + cplex.getValue(v.a.get(i)));
         }
-        for (int i = 0; i < v.g.size(); i++) {
-            out_g.println(cplex.getValue(v.g.get(i)));
+        // to file:
+        for (int i = 0; i < best.q.length; i++) {
+            out_q.println(best.q[i]);
+        }
+        for (int i = 0; i < best.x.length; i++) {
+            out_x.println(best.x[i]);
+        }
+        for (int i = 0; i < best.t.length; i++) {
+            out_t.println(best.t[i]);
+        }
+        for (int i = 0; i < best.y.length; i++) {
+            out_y.println(best.y[i]);
         }
     }
 

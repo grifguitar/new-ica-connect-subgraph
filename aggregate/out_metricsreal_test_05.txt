@@ -1,0 +1,5 @@
+real_test_05_module_0_nc_0.25, best_f1score = 0.14029363784665577
+real_test_05_module_0_nc_0.4, best_f1score = 0.13670133729569095
+real_test_05_module_0_nc_0.5, best_f1score = 0.13753581661891118
+real_test_05_module_0_x, f1score = 0.21290322580645163
+real_test_05_module_0_y, f1score = 0.007194244604316547
