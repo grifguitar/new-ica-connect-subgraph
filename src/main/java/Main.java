@@ -156,7 +156,7 @@ public class Main {
 //
 //            solver.close();
 
-            SimpleCallbackSolver simpleCallbackSolver = new SimpleCallbackSolver(matrix, graph, 1000);
+            SimpleCallbackSolver simpleCallbackSolver = new SimpleCallbackSolver(matrix, graph, 300);
 
             if (simpleCallbackSolver.solve()) {
                 try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {

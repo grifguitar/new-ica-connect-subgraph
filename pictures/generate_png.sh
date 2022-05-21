@@ -1,8 +1,8 @@
 #!/bin/bash
 
 x=".png"
-for variable in `ls | grep ".dot"`
+for variable in `ls | grep "x_module0.dot"`
   do
     echo "$variable"
-    sfdp -x -Goverlap=prism -Tpng "$variable" > "$variable$x"
+    sfdp -Goverlap=scale -Tpng "$variable" > "$variable$x"
   done

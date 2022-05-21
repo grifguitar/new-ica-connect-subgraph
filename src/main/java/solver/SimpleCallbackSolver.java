@@ -214,12 +214,12 @@ public class SimpleCallbackSolver implements Closeable {
 
             for (int i = 0; i < graph.getEdges().size(); i++) {
                 Pair<Integer, Integer> edge = graph.getEdges().get(i);
-                x[i] = q[edge.first] * q[edge.second];
+                x[i] = q[edge.first] + q[edge.second];
             }
 
             for (int i = 0; i < graph.getEdges().size(); i++) {
                 Pair<Integer, Integer> edge = graph.getEdges().get(i);
-                y[i] = t[edge.first] * t[edge.second];
+                y[i] = t[edge.first] + t[edge.second];
             }
 
             MST.solve(graph, x, q, r, 0);

@@ -119,8 +119,8 @@ public class DrawUtils {
 //                    lines.put("z1", ROC.getLine(ica_f, p));
 //                    lines.put("z2", ROC.getLine(ica_g, p));
 
-                    graph.saveAsDOT("./pictures/", title + "_x", x, q, new Pair<>(line_x.threshold(), p), modNum);
-                    graph.saveAsDOT("./pictures/", title + "_y", y, t, new Pair<>(line_y.threshold(), p), modNum);
+                    graph.saveAsDOT("./pictures/", title + "_x", x, q, new Pair<>(line_x.threshold(), p), modNum, false);
+                    graph.saveAsDOT("./pictures/", title + "_y", y, t, new Pair<>(line_y.threshold(), p), modNum, false);
 
                     ROC.draw(title + "_module_" + modNum, lines);
                 }
