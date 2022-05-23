@@ -1,0 +1,29 @@
+digraph 2_test_small_05_y {
+N_16 [shape = ellipse, style = filled, fillcolor = "#96ff00", label = "CASP8(841)\n10,748"];
+N_18 [shape = ellipse, style = filled, fillcolor = "#967100", label = "RUNX1(861)\n2,810"];
+N_46 [shape = ellipse, style = filled, fillcolor = "#96b200", label = "CTNNB1(1499)\n3,690"];
+N_51 [shape = ellipse, style = filled, fillcolor = "#967200", label = "EP300(2033)\n2,811"];
+N_77 [shape = box, style = filled, fillcolor = "#964b00", label = "IKBKB(3551)\n2,285"];
+N_95 [shape = ellipse, style = filled, fillcolor = "#96b200", label = "SMAD2(4087)\n3,689"];
+N_130 [shape = ellipse, style = filled, fillcolor = "#96b100", label = "MAPK8(5599)\n3,687"];
+N_162 [shape = ellipse, style = filled, fillcolor = "#967100", label = "STAT5B(6777)\n2,810"];
+N_168 [shape = ellipse, style = filled, fillcolor = "#96b100", label = "TP53(7157)\n3,688"];
+N_170 [shape = ellipse, style = filled, fillcolor = "#964b00", label = "TRAF2(7186)\n2,284"];
+N_188 [shape = ellipse, style = filled, fillcolor = "#96b100", label = "EIF2S2(8894)\n3,687"];
+N_189 [shape = ellipse, style = filled, fillcolor = "#967100", label = "TCF12(6938)\n2,810"];
+N_208 [shape = ellipse, style = filled, fillcolor = "#965000", label = "PTPRZ1(5803)\n2,357"];
+N_236 [shape = ellipse, style = filled, fillcolor = "#967100", label = "TRERF1(55809)\n2,810"];
+N_16 -> N_46 [ color = blue ];
+N_51 -> N_18 [ color = blue ];
+N_46 -> N_77 [ color = blue ];
+N_46 -> N_95 [ color = blue ];
+N_51 -> N_162 [ color = blue ];
+N_168 -> N_51 [ color = blue ];
+N_95 -> N_168 [ color = blue ];
+N_168 -> N_130 [ color = blue ];
+N_77 -> N_170 [ color = blue ];
+N_168 -> N_188 [ color = blue ];
+N_51 -> N_189 [ color = blue ];
+N_46 -> N_208 [ color = blue ];
+N_51 -> N_236 [ color = blue ];
+}

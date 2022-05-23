@@ -1,0 +1,9 @@
+digraph 3_test_small_1_x {
+N_1 [shape = box, style = filled, fillcolor = "#964b00", label = "PARP1(142)\n2,323"];
+N_11 [shape = ellipse, style = filled, fillcolor = "#964b00", label = "BRCA1(672)\n2,325"];
+N_152 [shape = ellipse, style = filled, fillcolor = "#964b00", label = "TP53(7157)\n2,324"];
+N_212 [shape = box, style = filled, fillcolor = "#96ff00", label = "RAD50(10111)\n6,190"];
+N_152 -> N_1 [ color = blue ];
+N_11 -> N_152 [ color = blue ];
+N_212 -> N_11 [ color = blue ];
+}

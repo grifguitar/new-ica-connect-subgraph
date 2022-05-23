@@ -1,0 +1,7 @@
+digraph 3_test_small_1_y {
+N_11 [shape = ellipse, style = filled, fillcolor = "#964b00", label = "BRCA1(672)\n2,988"];
+N_152 [shape = ellipse, style = filled, fillcolor = "#964b00", label = "TP53(7157)\n2,987"];
+N_177 [shape = ellipse, style = filled, fillcolor = "#96ff00", label = "CCNA1(8900)\n5,917"];
+N_11 -> N_152 [ color = blue ];
+N_177 -> N_11 [ color = blue ];
+}

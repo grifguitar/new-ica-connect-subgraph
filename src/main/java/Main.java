@@ -18,11 +18,11 @@ import static analysis.DataAnalysis.whitening;
 public class Main {
     private static final String OUT_FOLDER = "./answers/";
     private static final String OUT_N = "./answers/p_ans_";
-    private static final String IN = "./real_data/";
+    private static final String IN = "./in_data/";
     private static final String LOGS = "./logs/";
-    private static final String FILENAME = "real_test_05";
+    private static final String FILENAME = "3_test_small_1";
     private static final int ANS_FILES_COUNT = 3;
-    private static final boolean REAL_DATA = true;
+    private static final boolean REAL_DATA = false;
 
     public static void main(String[] args) {
         try {
@@ -137,7 +137,7 @@ public class Main {
 
             // solve
 
-            ConnectCallbackSolver solver = new ConnectCallbackSolver(matrix, graph, 1000);
+            ConnectCallbackSolver solver = new ConnectCallbackSolver(matrix, graph, 20);
             //SimpleSolver solver = new SimpleSolver(matrix);
 
             if (solver.solve()) {

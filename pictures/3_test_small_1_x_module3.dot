@@ -1,0 +1,23 @@
+digraph 3_test_small_1_x {
+N_1 [shape = ellipse, style = filled, fillcolor = "#968300", label = "PARP1(142)\n2,323"];
+N_11 [shape = ellipse, style = filled, fillcolor = "#968400", label = "BRCA1(672)\n2,325"];
+N_26 [shape = ellipse, style = filled, fillcolor = "#968300", label = "CDK2(1017)\n2,322"];
+N_59 [shape = ellipse, style = filled, fillcolor = "#968300", label = "CDKN2C(1031)\n2,322"];
+N_62 [shape = ellipse, style = filled, fillcolor = "#968300", label = "CDK9(1025)\n2,322"];
+N_89 [shape = ellipse, style = filled, fillcolor = "#967900", label = "IFNGR2(3460)\n2,235"];
+N_90 [shape = box, style = filled, fillcolor = "#967900", label = "JAK2(3717)\n2,236"];
+N_116 [shape = ellipse, style = filled, fillcolor = "#964b00", label = "PTK2(5747)\n1,833"];
+N_152 [shape = ellipse, style = filled, fillcolor = "#968300", label = "TP53(7157)\n2,324"];
+N_188 [shape = ellipse, style = filled, fillcolor = "#968300", label = "BUB3(9184)\n2,322"];
+N_212 [shape = ellipse, style = filled, fillcolor = "#96ff00", label = "RAD50(10111)\n6,190"];
+N_11 -> N_90 [ color = blue ];
+N_90 -> N_89 [ color = blue ];
+N_152 -> N_1 [ color = blue ];
+N_11 -> N_152 [ color = blue ];
+N_152 -> N_26 [ color = blue ];
+N_152 -> N_59 [ color = blue ];
+N_152 -> N_62 [ color = blue ];
+N_152 -> N_116 [ color = blue ];
+N_1 -> N_188 [ color = blue ];
+N_212 -> N_11 [ color = blue ];
+}
