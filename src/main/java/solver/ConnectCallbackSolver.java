@@ -1,7 +1,6 @@
 package solver;
 
 import algo.MST;
-import drawing.DrawUtils;
 import graph.Graph;
 import ilog.concert.*;
 import ilog.cplex.*;
@@ -34,6 +33,8 @@ public class ConnectCallbackSolver implements Closeable {
 
         public final IloNumVar[] x;
 
+        public final IloNumVar[] allVars;
+
 //        public final List<IloNumVar> s;
 //        public final List<IloNumVar> t;
 //
@@ -55,12 +56,14 @@ public class ConnectCallbackSolver implements Closeable {
 //            this.t = new ArrayList<>();
 //
 //            this.y = new ArrayList<>();
+
+            this.allVars = new IloNumVar[D + 6 * N + E];
         }
     }
 
     // constants:
 
-    private final static float INF = 1000;
+    private final static float INF = 10000;
     private final static double STEP = 0.001;
 
     // variables:
@@ -132,12 +135,22 @@ public class ConnectCallbackSolver implements Closeable {
             v.x[i] = (cplex.numVar(0, 1, IloNumVarType.Int, varNameOf("x", i)));
 //            v.y.add(cplex.numVar(0, 1, IloNumVarType.Int, varNameOf("y", i)));
         }
+
+        int ind_var = 0;
+        for (IloNumVar z : v.a) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.f) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.g) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.alpha) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.beta) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.r) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.q) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.x) v.allVars[ind_var++] = z;
     }
 
     private void addObjective() throws IloException {
         IloNumExpr[] squares = new IloNumExpr[D];
         for (int i = 0; i < squares.length; i++) {
-            squares[i] = cplex.prod(cplex.prod(v.a[i], v.a[i]), N * 10);
+            squares[i] = cplex.prod(cplex.prod(v.a[i], v.a[i]), N);
         }
         IloNumExpr[] err_f = new IloNumExpr[N];
         for (int i = 0; i < err_f.length; i++) {
@@ -155,16 +168,17 @@ public class ConnectCallbackSolver implements Closeable {
 
     private double calcObjective(RawSolution sol) {
         double sum = 0;
-        double[] squares = new double[D];
-        for (int i = 0; i < squares.length; i++) {
-            squares[i] = sol.a[i] * sol.a[i] * N * 10;
-            sum += squares[i];
+        //double[] squares = new double[D];
+        for (int i = 0; i < D; i++) {
+            //squares[i] = sol.a[i] * sol.a[i] * N * 2;
+            sum += sol.a[i] * sol.a[i] * N;
         }
-        double[] err_f = new double[N];
-        for (int i = 0; i < err_f.length; i++) {
-            err_f[i] = (sol.f[i] - sol.q[i]);
-            err_f[i] = err_f[i] * err_f[i];
-            sum -= err_f[i];
+        //double[] err_f = new double[N];
+        for (int i = 0; i < N; i++) {
+            //err_f[i] = (sol.f[i] - sol.q[i]);
+            double val = (sol.f[i] - sol.q[i]);
+            //err_f[i] = err_f[i] * err_f[i];
+            sum -= val * val;
         }
 //        double[] err_g = new double[sol.matrix.numRows()];
 //        for (int i = 0; i < err_g.length; i++) {
@@ -206,7 +220,7 @@ public class ConnectCallbackSolver implements Closeable {
                 throw new RuntimeException("unexpected back_num");
             }
 
-            Graph.checkEdges(graph, num, back_num);
+            //Graph.checkEdges(graph, num, back_num);
 
             cplex.addLe(
                     cplex.sum(v.x[num], v.x[back_num]),
@@ -226,8 +240,8 @@ public class ConnectCallbackSolver implements Closeable {
                 int num = to.second.intValue();
                 int back_num = Graph.companionEdge(num);
 
-                Graph.checkEdges(graph, num, back_num);
-                Graph.checkDest(graph, back_num, vertex);
+                //Graph.checkEdges(graph, num, back_num);
+                //Graph.checkDest(graph, back_num, vertex);
 
                 input_edges_x[i_1++] = (v.x[back_num]);
 //                input_edges_y.add(v.y.get(back_num));
@@ -257,7 +271,7 @@ public class ConnectCallbackSolver implements Closeable {
     }
 
     private void tuning() throws IloException {
-        cplex.use(new ICACallback());
+        //cplex.use(new ICACallback());
     }
 
     // callback:
@@ -512,18 +526,8 @@ public class ConnectCallbackSolver implements Closeable {
                     throw new RuntimeException(e);
                 }
 
-                IloNumVar[] vars = new IloNumVar[D + 6 * N + E];
                 double[] vals = new double[D + 6 * N + E];
                 int ind_var = 0;
-                for (IloNumVar z : v.a) vars[ind_var++] = z;
-                for (IloNumVar z : v.f) vars[ind_var++] = z;
-                for (IloNumVar z : v.g) vars[ind_var++] = z;
-                for (IloNumVar z : v.alpha) vars[ind_var++] = z;
-                for (IloNumVar z : v.beta) vars[ind_var++] = z;
-                for (IloNumVar z : v.r) vars[ind_var++] = z;
-                for (IloNumVar z : v.q) vars[ind_var++] = z;
-                for (IloNumVar z : v.x) vars[ind_var++] = z;
-                ind_var = 0;
                 for (double z : sol.a) vals[ind_var++] = z;
                 for (double z : sol.f) vals[ind_var++] = z;
                 for (double z : sol.g) vals[ind_var++] = z;
@@ -535,7 +539,7 @@ public class ConnectCallbackSolver implements Closeable {
 
                 if (calcObj >= getIncumbentObjValue()) {
                     //System.out.println("found new solution: " + calcObj);
-                    setSolution(vars, vals);
+                    setSolution(v.allVars, vals);
                 }
 
             }

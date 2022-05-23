@@ -1,7 +1,7 @@
 digraph 1_test_small_025_x {
-N_22 [shape = box, style = filled, fillcolor = "#96ff00", label = "CDC2(983)\n13,854"];
-N_90 [shape = box, style = filled, fillcolor = "#965200", label = "PCNA(5111)\n3,107"];
-N_240 [shape = box, style = filled, fillcolor = "#965200", label = "BAZ1B(9031)\n3,106"];
+N_22 [shape = box, style = filled, fillcolor = "#96ff00", label = "CDC2(983)\n13.854"];
+N_90 [shape = box, style = filled, fillcolor = "#965200", label = "PCNA(5111)\n3.107"];
+N_240 [shape = box, style = filled, fillcolor = "#965200", label = "BAZ1B(9031)\n3.106"];
 N_22 -> N_90 [ color = blue ];
 N_90 -> N_240 [ color = blue ];
 }
