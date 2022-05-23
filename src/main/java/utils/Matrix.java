@@ -8,57 +8,58 @@ import java.util.*;
 public class Matrix {
     private static final double EPS = 1e-6;
 
-    private final double[][] data;
+    private final RealMatrix entry;
 
     public Matrix(double[][] data) {
-        this.data = data;
+        this.entry = new Array2DRowRealMatrix(data);
     }
 
     public Matrix(double[] vec) {
-        this.data = new double[][]{vec};
+        this.entry = new Array2DRowRealMatrix(new double[][]{vec});
     }
 
     public Matrix(List<List<Double>> data) {
         if (data.isEmpty()) {
             throw new RuntimeException("expected non-empty matrix argument");
         }
-        this.data = new double[data.size()][data.get(0).size()];
+        double[][] this_data = new double[data.size()][data.get(0).size()];
         for (int i = 0; i < data.size(); i++) {
             if (data.get(i).size() != data.get(0).size()) {
                 throw new RuntimeException("wrong matrix argument, no rectangle");
             }
             for (int j = 0; j < data.get(0).size(); j++) {
-                this.data[i][j] = data.get(i).get(j);
+                this_data[i][j] = data.get(i).get(j);
             }
         }
+        this.entry = new Array2DRowRealMatrix(this_data);
     }
 
     public Matrix(RealMatrix mtx) {
-        this.data = mtx.getData();
+        this.entry = mtx;
     }
 
     public int numCols() {
-        return data[0].length;
+        return entry.getColumnDimension();
     }
 
     public int numRows() {
-        return data.length;
+        return entry.getRowDimension();
     }
 
     public double[] getRow(int row) {
-        return data[row];
+        return entry.getRow(row);
     }
 
     public double getElem(int row, int col) {
-        return data[row][col];
+        return entry.getEntry(row, col);
     }
 
     public Matrix transpose() {
-        return new Matrix(this.toApacheMatrix().transpose());
+        return new Matrix(this.entry.transpose());
     }
 
     public Matrix mult(Matrix other) {
-        return new Matrix(this.toApacheMatrix().multiply(other.toApacheMatrix()));
+        return new Matrix(this.entry.multiply(other.entry));
     }
 
     public Matrix div(double N) {
@@ -78,13 +79,13 @@ public class Matrix {
 
         for (int i = 0; i < numRows(); i++) {
             for (int j = 0; j < numCols(); j++) {
-                if (data[i][j] != data[j][i]) {
+                if (getElem(i, j) != getElem(j, i)) {
                     throw new RuntimeException("expected symmetric matrix!");
                 }
             }
         }
 
-        EigenDecomposition eig = new EigenDecomposition(toApacheMatrix());
+        EigenDecomposition eig = new EigenDecomposition(entry);
 
         if (eig.hasComplexEigenvalues()) {
             throw new RuntimeException("expected non-complex eigen values!");
@@ -130,16 +131,12 @@ public class Matrix {
         return new Pair<>(eigenValues, eigenVectors);
     }
 
-    private RealMatrix toApacheMatrix() {
-        return new Array2DRowRealMatrix(data);
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (double[] row : data) {
-            for (double elem : row) {
-                sb.append(elem);
+        for (int i = 0; i < numRows(); i++) {
+            for (int j = 0; j < numCols(); j++) {
+                sb.append(getElem(i, j));
                 sb.append("\t");
             }
             sb.append("\n");
