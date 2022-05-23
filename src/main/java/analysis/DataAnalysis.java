@@ -40,7 +40,7 @@ public class DataAnalysis {
                     debug.println("cov_mtx_2:");
                     debug.println(cov_mtx_2);
 
-                    Matrix pca_mtx = DataAnalysis.pca(st_mtx, debug, 3);
+                    Matrix pca_mtx = DataAnalysis.pca(st_mtx, debug, 2);
 
                     Matrix cov_mtx_pca_mtx = DataAnalysis.getCovMatrix(pca_mtx, debug, true);
                     debug.println("cov_mtx_pca_mtx:");

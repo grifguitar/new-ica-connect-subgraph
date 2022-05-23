@@ -1,0 +1,15 @@
+digraph 1_test_small_025_y {
+N_22 [shape = ellipse, style = filled, fillcolor = "#96ff00", label = "CDC2(983)\n13,854"];
+N_28 [shape = box, style = filled, fillcolor = "#964b00", label = "CREBBP(1387)\n2,570"];
+N_89 [shape = box, style = filled, fillcolor = "#964b00", label = "PAX5(5079)\n2,571"];
+N_90 [shape = ellipse, style = filled, fillcolor = "#966700", label = "PCNA(5111)\n3,107"];
+N_92 [shape = ellipse, style = filled, fillcolor = "#965700", label = "MUTYH(4595)\n2,802"];
+N_114 [shape = ellipse, style = filled, fillcolor = "#964b00", label = "RB1(5925)\n2,572"];
+N_240 [shape = ellipse, style = filled, fillcolor = "#966700", label = "BAZ1B(9031)\n3,106"];
+N_89 -> N_28 [ color = blue ];
+N_22 -> N_90 [ color = blue ];
+N_90 -> N_92 [ color = blue ];
+N_22 -> N_114 [ color = blue ];
+N_114 -> N_89 [ color = blue ];
+N_90 -> N_240 [ color = blue ];
+}
