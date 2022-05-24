@@ -12,7 +12,7 @@ import java.util.*;
  */
 public class DrawUtils {
     private static final double EPS = 1e-6;
-    private static final int ANS_FILES_COUNT = 2;
+    private static final int ANS_FILES_COUNT = 0;
 
     public static void newDraw(String folder, String title, Graph graph) {
         try (PrintWriter agg1 = new PrintWriter(new FileOutputStream("./aggregate/agg1.txt", true))) {
@@ -121,6 +121,29 @@ public class DrawUtils {
                         } else {
                             agg1.println(title + "_module_" + modNum + "_y_" + base + ", metrics = " + Arrays.toString(m_y));
                             String str_my = title + "_module_" + modNum + "_y_" + base + ", f1score = " + m_y[2];
+                            agg2.println(str_my);
+                            results.get(modNum).add(str_my);
+                            if (m_y[2] > bestValue) {
+                                bestValue = m_y[2];
+                                bestModule = modNum;
+                            }
+                        }
+                    }
+                    if (ANS_FILES_COUNT == 0) {
+                        double[] m_x = calcMetrics(q, p, line_x.threshold().get(line_x.threshold().size() - 1));
+                        double[] m_y = calcMetrics(t, p, line_y.threshold().get(line_y.threshold().size() - 1));
+                        if (m_x[2] > m_y[2]) {
+                            agg1.println(title + "_module_" + modNum + "_x_" + "nobase" + ", metrics = " + Arrays.toString(m_x));
+                            String str_my = title + "_module_" + modNum + "_x_" + "nobase" + ", f1score = " + m_x[2];
+                            agg2.println(str_my);
+                            results.get(modNum).add(str_my);
+                            if (m_x[2] > bestValue) {
+                                bestValue = m_x[2];
+                                bestModule = modNum;
+                            }
+                        } else {
+                            agg1.println(title + "_module_" + modNum + "_y_" + "nobase" + ", metrics = " + Arrays.toString(m_y));
+                            String str_my = title + "_module_" + modNum + "_y_" + "nobase" + ", f1score = " + m_y[2];
                             agg2.println(str_my);
                             results.get(modNum).add(str_my);
                             if (m_y[2] > bestValue) {

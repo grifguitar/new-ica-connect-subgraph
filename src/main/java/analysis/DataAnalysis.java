@@ -17,6 +17,7 @@ public class DataAnalysis {
     /**
      * private constants
      */
+    private static final int PCA_COMPONENTS_NUM = 3;
     private static final double EPS = 1e-6;
     private static final String F_DEBUG = "./logs/data_analysis_debug.txt";
     private static final String F_OUT = "./logs/data_analysis_out.txt";
@@ -40,7 +41,7 @@ public class DataAnalysis {
                     debug.println("cov_mtx_2:");
                     debug.println(cov_mtx_2);
 
-                    Matrix pca_mtx = DataAnalysis.pca(st_mtx, debug, 2);
+                    Matrix pca_mtx = DataAnalysis.pca(st_mtx, debug, PCA_COMPONENTS_NUM);
 
                     Matrix cov_mtx_pca_mtx = DataAnalysis.getCovMatrix(pca_mtx, debug, true);
                     debug.println("cov_mtx_pca_mtx:");

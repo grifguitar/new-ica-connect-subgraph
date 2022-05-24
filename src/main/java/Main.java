@@ -18,11 +18,11 @@ import static analysis.DataAnalysis.whitening;
 public class Main {
     private static final String OUT_FOLDER = "./answers/";
     private static final String OUT_N = "./answers/p_ans_";
-    private static final String IN = "./in_data/";
+    private static final String IN = "./real_data/";
     private static final String LOGS = "./logs/";
-    private static final String FILENAME = "5_test_small_05";
-    private static final int ANS_FILES_COUNT = 2;
-    private static final boolean REAL_DATA = false;
+    private static final String FILENAME = "real_test_new";
+    private static final int ANS_FILES_COUNT = 0;
+    private static final boolean REAL_DATA = true;
 
     public static void main(String[] args) {
         try {
@@ -122,14 +122,16 @@ public class Main {
                     throw new RuntimeException("not equals naming map");
                 }
             });
-            if (namingMapAnsNetCl.size() != namingMapAns.size()) {
-                throw new RuntimeException("not equals naming map");
-            }
-            namingMapAnsNetCl.forEach((k, v) -> {
-                if (!Objects.equals(namingMapAns.get(k), v)) {
+            if (ANS_FILES_COUNT != 0) {
+                if (namingMapAnsNetCl.size() != namingMapAns.size()) {
                     throw new RuntimeException("not equals naming map");
                 }
-            });
+                namingMapAnsNetCl.forEach((k, v) -> {
+                    if (!Objects.equals(namingMapAns.get(k), v)) {
+                        throw new RuntimeException("not equals naming map");
+                    }
+                });
+            }
 
             // whitening
 
@@ -137,39 +139,39 @@ public class Main {
 
             // solve
 
-            ConnectCallbackSolver solver = new ConnectCallbackSolver(matrix, graph, 20);
-
-            if (solver.solve()) {
-                try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
-                    try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
-                        try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
-                            try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
-                                solver.writeVarsToFiles(out_q, out_x, out_t, out_y);
-                            }
-                        }
-                    }
-                }
-            } else {
-                System.out.println("ConnectCallbackSolver: integer results not found!");
-            }
-
-            solver.close();
-
-//            SimpleCallbackSolver simpleCallbackSolver = new SimpleCallbackSolver(matrix, graph, 20);
+//            ConnectCallbackSolver solver = new ConnectCallbackSolver(matrix, graph, 20);
 //
-//            if (simpleCallbackSolver.solve()) {
+//            if (solver.solve()) {
 //                try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
 //                    try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
 //                        try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
 //                            try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
-//                                simpleCallbackSolver.writeVarsToFiles(out_q, out_x, out_t, out_y);
+//                                solver.writeVarsToFiles(out_q, out_x, out_t, out_y);
 //                            }
 //                        }
 //                    }
 //                }
+//            } else {
+//                System.out.println("ConnectCallbackSolver: integer results not found!");
 //            }
 //
-//            simpleCallbackSolver.close();
+//            solver.close();
+
+            SimpleCallbackSolver simpleCallbackSolver = new SimpleCallbackSolver(matrix, graph, 150);
+
+            if (simpleCallbackSolver.solve()) {
+                try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
+                    try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
+                        try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
+                            try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
+                                simpleCallbackSolver.writeVarsToFiles(out_q, out_x, out_t, out_y);
+                            }
+                        }
+                    }
+                }
+            }
+
+            simpleCallbackSolver.close();
 
             DrawUtils.newDraw("./answers/", FILENAME, graph);
 

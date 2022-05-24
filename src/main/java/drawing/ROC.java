@@ -114,7 +114,7 @@ public class ROC {
         List<Integer> threshold_index_ans = new ArrayList<>();
         List<Double> threshold_ans = new ArrayList<>();
 
-        if (activeModuleSize != null) {
+        if (activeModuleSize != null && activeModuleSize.size() != 0) {
             for (int size : activeModuleSize) {
                 if (size <= 1) size = 1;
                 threshold_index_ans.add(size - 1);
