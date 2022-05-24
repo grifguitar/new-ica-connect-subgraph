@@ -43,3 +43,5 @@ n9_test_small_05_module_1_x_0.4, f1score = 0.3684210526315789
 5_test_small_05_module_0_x_0.25, f1score = 0.41379310344827586
 5_test_small_05_module_0_nc_0.4, best_f1score = 0.358974358974359
 5_test_small_05_module_0_x_0.4, f1score = 0.6153846153846154
+--------------------
+real_test_new_module_0_x_nobase, f1score = 0.23333333333333336

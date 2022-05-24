@@ -43,7 +43,7 @@ public class SimpleCallbackSolver implements Closeable {
 
     // constants:
 
-    private final static float INF = 1000;
+    private final static float INF = 10000;
 
     // variables:
 
