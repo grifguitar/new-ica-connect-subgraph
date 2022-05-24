@@ -1,7 +1,6 @@
 package solver;
 
 import algo.MST;
-import drawing.DrawUtils;
 import graph.Graph;
 import ilog.concert.*;
 import ilog.cplex.*;
@@ -23,18 +22,22 @@ public class SimpleCallbackSolver implements Closeable {
     // data class:
 
     private static class Variables {
-        public final List<IloNumVar> a;
-        public final List<IloNumVar> f;
-        public final List<IloNumVar> g;
-        public final List<IloNumVar> alpha;
-        public final List<IloNumVar> beta;
+        public final IloNumVar[] a;
+        public final IloNumVar[] f;
+        public final IloNumVar[] g;
+        public final IloNumVar[] alpha;
+        public final IloNumVar[] beta;
 
-        public Variables() {
-            this.a = new ArrayList<>();
-            this.f = new ArrayList<>();
-            this.g = new ArrayList<>();
-            this.alpha = new ArrayList<>();
-            this.beta = new ArrayList<>();
+        public final IloNumVar[] allVars;
+
+        public Variables(int D, int N) {
+            this.a = new IloNumVar[D];
+            this.f = new IloNumVar[N];
+            this.g = new IloNumVar[N];
+            this.alpha = new IloNumVar[N];
+            this.beta = new IloNumVar[N];
+
+            this.allVars = new IloNumVar[D + 4 * N];
         }
     }
 
@@ -76,7 +79,7 @@ public class SimpleCallbackSolver implements Closeable {
             throw new RuntimeException("vertex count not equals with row count");
         }
 
-        this.v = new Variables();
+        this.v = new Variables(D, N);
 
         this.cplex = new IloCplex();
         this.cplex.setParam(IloCplex.Param.OptimalityTarget, IloCplex.OptimalityTarget.OptimalGlobal);
@@ -93,30 +96,35 @@ public class SimpleCallbackSolver implements Closeable {
 
     private void addVariables() throws IloException {
         for (int i = 0; i < D; i++) {
-            v.a.add(cplex.numVar(-INF, INF, IloNumVarType.Float, varNameOf("a", i)));
+            v.a[i] = (cplex.numVar(-INF, INF, IloNumVarType.Float, varNameOf("a", i)));
         }
         for (int i = 0; i < N; i++) {
-            v.f.add(cplex.numVar(0, INF, IloNumVarType.Float, varNameOf("f", i)));
-            v.g.add(cplex.numVar(0, INF, IloNumVarType.Float, varNameOf("g", i)));
-            v.alpha.add(cplex.numVar(0, 1, IloNumVarType.Int, varNameOf("alpha", i)));
-            v.beta.add(cplex.numVar(0, 1, IloNumVarType.Int, varNameOf("beta", i)));
+            v.f[i] = (cplex.numVar(0, INF, IloNumVarType.Float, varNameOf("f", i)));
+            v.g[i] = (cplex.numVar(0, INF, IloNumVarType.Float, varNameOf("g", i)));
+            v.alpha[i] = (cplex.numVar(0, 1, IloNumVarType.Int, varNameOf("alpha", i)));
+            v.beta[i] = (cplex.numVar(0, 1, IloNumVarType.Int, varNameOf("beta", i)));
         }
+
+        int ind_var = 0;
+        for (IloNumVar z : v.a) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.f) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.g) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.alpha) v.allVars[ind_var++] = z;
+        for (IloNumVar z : v.beta) v.allVars[ind_var++] = z;
     }
 
     private void addObjective() throws IloException {
         IloNumExpr[] squares = new IloNumExpr[D];
         for (int i = 0; i < squares.length; i++) {
-            squares[i] = cplex.prod(v.a.get(i), v.a.get(i));
+            squares[i] = cplex.prod(v.a[i], v.a[i]);
         }
         cplex.addMaximize(cplex.sum(squares));
     }
 
-    private static double calcObjective(RawSolution sol) {
+    private double calcObjective(RawSolution sol) {
         double sum = 0;
-        double[] squares = new double[sol.matrix.numCols()];
-        for (int i = 0; i < squares.length; i++) {
-            squares[i] = sol.a[i] * sol.a[i];
-            sum += squares[i];
+        for (int i = 0; i < D; i++) {
+            sum += sol.a[i] * sol.a[i];
         }
         return sum;
     }
@@ -124,21 +132,21 @@ public class SimpleCallbackSolver implements Closeable {
     private void addConstraint() throws IloException {
         for (int i = 0; i < N; i++) {
             cplex.addEq(
-                    cplex.scalProd(matrix.getRow(i), toArray(v.a)),
-                    cplex.diff(v.f.get(i), v.g.get(i))
+                    cplex.scalProd(matrix.getRow(i), v.a),
+                    cplex.diff(v.f[i], v.g[i])
             );
         }
 
         IloNumExpr[] l1normP = new IloNumExpr[N];
         for (int i = 0; i < l1normP.length; i++) {
-            l1normP[i] = cplex.sum(v.f.get(i), v.g.get(i));
+            l1normP[i] = cplex.sum(v.f[i], v.g[i]);
         }
         cplex.addEq(cplex.sum(l1normP), N);
 
         for (int i = 0; i < N; i++) {
-            cplex.addLe(v.f.get(i), cplex.prod(v.alpha.get(i), INF));
-            cplex.addLe(v.g.get(i), cplex.prod(v.beta.get(i), INF));
-            cplex.addEq(cplex.sum(v.alpha.get(i), v.beta.get(i)), 1);
+            cplex.addLe(v.f[i], cplex.prod(v.alpha[i], INF));
+            cplex.addLe(v.g[i], cplex.prod(v.beta[i], INF));
+            cplex.addEq(cplex.sum(v.alpha[i], v.beta[i]), 1);
         }
     }
 
@@ -148,23 +156,45 @@ public class SimpleCallbackSolver implements Closeable {
 
     // callback:
 
-    private record RawSolution(
-            IloNumVar[] vars,
-            Matrix matrix,
-            Graph graph,
-            double[] a,
-            double[] f,
-            double[] g,
-            double[] alpha,
-            double[] beta,
-            double[] r,
-            double[] q,
-            double[] x,
-            double[] s,
-            double[] t,
-            double[] y
-    ) {
+    private class RawSolution {
         private static final double eps = 1e-6;
+        public final double[] a;
+        public final double[] f;
+        public final double[] g;
+        public final double[] alpha;
+        public final double[] beta;
+        public final double[] r;
+        public final double[] q;
+        public final double[] x;
+        public final double[] s;
+        public final double[] t;
+        public final double[] y;
+
+        private RawSolution(
+                double[] a,
+                double[] f,
+                double[] g,
+                double[] alpha,
+                double[] beta,
+                double[] r,
+                double[] q,
+                double[] x,
+                double[] s,
+                double[] t,
+                double[] y
+        ) {
+            this.a = a;
+            this.f = f;
+            this.g = g;
+            this.alpha = alpha;
+            this.beta = beta;
+            this.r = r;
+            this.q = q;
+            this.x = x;
+            this.s = s;
+            this.t = t;
+            this.y = y;
+        }
 
         public boolean adapt() {
             double[] p = mul(matrix, a);
@@ -241,17 +271,6 @@ public class SimpleCallbackSolver implements Closeable {
             return matrix.mult(new Matrix(a).transpose()).transpose().getRow(0);
         }
 
-        public double[] getValues() {
-            double[] ans = new double[matrix.numCols() + 4 * matrix.numRows()];
-            int ind_ans = 0;
-            for (double x : a) ans[ind_ans++] = x;
-            for (double x : f) ans[ind_ans++] = x;
-            for (double x : g) ans[ind_ans++] = x;
-            for (double x : alpha) ans[ind_ans++] = x;
-            for (double x : beta) ans[ind_ans++] = x;
-            return ans;
-        }
-
         @Override
         public String toString() {
             return "RawSolution{" +
@@ -275,23 +294,13 @@ public class SimpleCallbackSolver implements Closeable {
     private class ICACallback extends IloCplex.HeuristicCallback {
         @Override
         protected void main() throws IloException {
-            IloNumVar[] vars = new IloNumVar[D + 4 * N];
-            int ind_var = 0;
-            for (IloNumVar x : v.a) vars[ind_var++] = x;
-            for (IloNumVar x : v.f) vars[ind_var++] = x;
-            for (IloNumVar x : v.g) vars[ind_var++] = x;
-            for (IloNumVar x : v.alpha) vars[ind_var++] = x;
-            for (IloNumVar x : v.beta) vars[ind_var++] = x;
 
             RawSolution sol = new RawSolution(
-                    vars,
-                    matrix,
-                    graph,
-                    this.getValues(toArray(v.a)),
-                    this.getValues(toArray(v.f)),
-                    this.getValues(toArray(v.g)),
-                    this.getValues(toArray(v.alpha)),
-                    this.getValues(toArray(v.beta)),
+                    this.getValues((v.a)),
+                    this.getValues((v.f)),
+                    this.getValues((v.g)),
+                    this.getValues((v.alpha)),
+                    this.getValues((v.beta)),
                     new double[N],
                     new double[N],
                     new double[E],
@@ -345,9 +354,17 @@ public class SimpleCallbackSolver implements Closeable {
                     best = sol;
                 }
 
+                double[] vals = new double[v.allVars.length];
+                int ind_var = 0;
+                for (double z : sol.a) vals[ind_var++] = z;
+                for (double z : sol.f) vals[ind_var++] = z;
+                for (double z : sol.g) vals[ind_var++] = z;
+                for (double z : sol.alpha) vals[ind_var++] = z;
+                for (double z : sol.beta) vals[ind_var++] = z;
+
                 if (calcObj >= getIncumbentObjValue()) {
                     //System.out.println("found new solution: " + calcObj);
-                    setSolution(sol.vars(), sol.getValues());
+                    setSolution(v.allVars, vals);
                 }
 
             }
@@ -364,7 +381,7 @@ public class SimpleCallbackSolver implements Closeable {
     public void writeVarsToFiles(PrintWriter out_q, PrintWriter out_x, PrintWriter out_t, PrintWriter out_y) throws IloException {
         System.out.println("obj = " + cplex.getObjValue());
         for (int i = 0; i < D; i++) {
-            System.out.println(varNameOf("a", i) + " = " + cplex.getValue(v.a.get(i)));
+            System.out.println(varNameOf("a", i) + " = " + cplex.getValue(v.a[i]));
         }
         // to file:
         for (int i = 0; i < best.q.length; i++) {
@@ -385,14 +402,6 @@ public class SimpleCallbackSolver implements Closeable {
 
     private static String varNameOf(String arg1, int arg2) {
         return arg1 + arg2;
-    }
-
-    private static IloNumVar[] toArray(List<IloNumVar> arg) {
-        IloNumVar[] result = new IloNumVar[arg.size()];
-        for (int i = 0; i < arg.size(); i++) {
-            result[i] = arg.get(i);
-        }
-        return result;
     }
 
 }
