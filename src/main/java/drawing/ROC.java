@@ -1,7 +1,5 @@
 package drawing;
 
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import utils.Pair;
 
 import java.util.*;
@@ -15,13 +13,13 @@ public class ROC {
     public record ROCLine(
             List<Pair<Number, Number>> line,
             Double auc_roc,
-            Integer threshold_index,
-            Double threshold
+            List<Integer> threshold_index,
+            List<Double> threshold
     ) {
         // nothing
     }
 
-    public static ROCLine getLine(Double[] predictions, Boolean[] labels) {
+    public static ROCLine getLine(Double[] predictions, Boolean[] labels, List<Integer> activeModuleSize) {
         if (predictions.length != labels.length) {
             throw new RuntimeException("invalid data #1 in Roc.draw method");
         }
@@ -113,13 +111,29 @@ public class ROC {
             throw new RuntimeException("divide by zero!");
         }
 
-        return new ROCLine(points, numerator / denominator, threshold_index, threshold);
+        List<Integer> threshold_index_ans = new ArrayList<>();
+        List<Double> threshold_ans = new ArrayList<>();
+
+        if (activeModuleSize != null) {
+            for (int size : activeModuleSize) {
+                if (size <= 1) size = 1;
+                threshold_index_ans.add(size - 1);
+                threshold_ans.add(list.get(size - 1).first);
+            }
+        }
+
+        threshold_index_ans.add(threshold_index);
+        threshold_ans.add(threshold);
+
+        return new ROCLine(points, numerator / denominator, threshold_index_ans, threshold_ans);
     }
 
-    public static void draw(String title, Map<String, ROCLine> lines) {
-        Line diagonal = new Line(65, 665, 685, 40);
-        diagonal.setStroke(Color.GRAY);
-
+    public static void draw(
+            String title,
+            Map<String, ROCLine> myLine,
+            Map<String, ROCLine> bestNetClustLine,
+            Map<String, ROCLine> otherNetClustLine
+    ) {
         DrawAPI.Axis xAxisData = new DrawAPI.Axis(
                 "False Positive Rate",
                 false,
@@ -137,11 +151,12 @@ public class ROC {
         );
 
         DrawAPI.addWindow(title,
-                lines,
                 xAxisData,
                 yAxisData,
+                myLine,
+                bestNetClustLine,
+                otherNetClustLine,
                 null
-                /*List.of(diagonal)*/
         );
     }
 }

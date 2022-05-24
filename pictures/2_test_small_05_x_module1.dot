@@ -1,9 +1,0 @@
-digraph 2_test_small_05_x {
-N_46 [shape = box, style = filled, fillcolor = "#964b00", label = "CTNNB1(1499)\n2,565"];
-N_95 [shape = ellipse, style = filled, fillcolor = "#964b00", label = "SMAD2(4087)\n2,566"];
-N_163 [shape = box, style = filled, fillcolor = "#96ff00", label = "STK6(6790)\n5,039"];
-N_168 [shape = ellipse, style = filled, fillcolor = "#96ab00", label = "TP53(7157)\n3,655"];
-N_95 -> N_46 [ color = blue ];
-N_168 -> N_95 [ color = blue ];
-N_163 -> N_168 [ color = blue ];
-}

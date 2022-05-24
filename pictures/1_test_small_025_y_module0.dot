@@ -1,5 +1,0 @@
-digraph 1_test_small_025_y {
-N_22 [shape = ellipse, style = filled, fillcolor = "#96ff00", label = "CDC2(983)\n14,333"];
-N_147 [shape = box, style = filled, fillcolor = "#964b00", label = "TP53(7157)\n4,073"];
-N_22 -> N_147 [ color = blue ];
-}

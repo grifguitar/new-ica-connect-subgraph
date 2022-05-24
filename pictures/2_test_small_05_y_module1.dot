@@ -1,5 +1,0 @@
-digraph 2_test_small_05_y {
-N_16 [shape = box, style = filled, fillcolor = "#96fa00", label = "CASP8(841)\n10,748"];
-N_46 [shape = box, style = filled, fillcolor = "#964b00", label = "CTNNB1(1499)\n3,690"];
-N_16 -> N_46 [ color = blue ];
-}

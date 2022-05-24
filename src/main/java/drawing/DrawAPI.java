@@ -14,9 +14,7 @@ import utils.Pair;
 
 import javax.imageio.ImageIO;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,16 +33,6 @@ public class DrawAPI extends Application {
         launch();
     }
 
-    public static void addWindow(
-            String title,
-            Map<String, ROC.ROCLine> lines,
-            Axis xAxisData,
-            Axis yAxisData,
-            List<Node> otherObjects
-    ) {
-        windows.add(new Window(title, lines, xAxisData, yAxisData, otherObjects));
-    }
-
     public record Axis(
             String name,
             boolean auto,
@@ -55,16 +43,34 @@ public class DrawAPI extends Application {
         // nothing
     }
 
-    private static double calcSquare(double x, double y) {
-        if (x < 0 || x > 1 || y < 0 || y > 1) return -1;
-        return (x * y / 2.0) + ((1.0 - x) * (1.0 - y) / 2.0) + (1.0 - x) * y;
+    public static void addWindow(
+            String title,
+            Axis xAxisData,
+            Axis yAxisData,
+            Map<String, ROC.ROCLine> myLine,
+            Map<String, ROC.ROCLine> bestNetClustLine,
+            Map<String, ROC.ROCLine> otherNetClustLine,
+            List<Node> otherObjects
+    ) {
+        windows.add(
+                new Window(title,
+                        xAxisData,
+                        yAxisData,
+                        myLine,
+                        bestNetClustLine,
+                        otherNetClustLine,
+                        otherObjects
+                )
+        );
     }
 
     private record Window(
             String title,
-            Map<String, ROC.ROCLine> lines,
             Axis xAxisData,
             Axis yAxisData,
+            Map<String, ROC.ROCLine> myLine,
+            Map<String, ROC.ROCLine> bestNetClustLine,
+            Map<String, ROC.ROCLine> otherNetClustLine,
             List<Node> otherObjects
     ) {
         public void run() {
@@ -77,85 +83,42 @@ public class DrawAPI extends Application {
             LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
 
             lineChart.lookup(".chart-plot-background").setStyle("-fx-background-color: white;");
-            lineChart.setTitle(title);
+            lineChart.setTitle("AUC ROC for \"" + title + "\"");
             lineChart.setCreateSymbols(false);
             lineChart.setAxisSortingPolicy(LineChart.SortingPolicy.NONE);
 
-            for (String name : lines.keySet()) {
-                if (name.startsWith("nc_")) {
-                    continue;
-                }
+            for (String lineName : myLine.keySet()) {
                 XYChart.Series<Number, Number> series = new XYChart.Series<>();
-                series.setName(name + String.format(" {%.2f} ", lines.get(name).auc_roc()));
-                for (Pair<Number, Number> point : lines.get(name).line()) {
+                series.setName(lineName + String.format(" (%.2f) ", myLine.get(lineName).auc_roc()));
+
+                for (Pair<Number, Number> point : myLine.get(lineName).line()) {
                     series.getData().add(new XYChart.Data<>(point.first, point.second));
                 }
+
                 lineChart.getData().add(series);
             }
 
-            for (String other : lines.keySet()) {
-                if (!other.startsWith("nc_")) {
-                    continue;
-                }
-                assert lines.get(other).line().size() == 3;
-                int ind = 1;
-                XYChart.Series<Number, Number> series = new XYChart.Series<>();
-                series.setName(other + String.format(" {%.2f} ", lines.get(other).auc_roc()));
-                try (PrintWriter pw = new PrintWriter(new FileOutputStream("./aggregate/f_" + title + ".txt", true))) {
-                    double x_d = (double) lines.get(other).line().get(ind).first;
-                    double y_d = (double) lines.get(other).line().get(ind).second;
-                    pw.print(other + " " + String.format("%.3f", x_d) + " " + String.format("%.3f", y_d) + " ");
-                    for (String name : lines.keySet()) {
-                        if (name.startsWith("x") || name.startsWith("y")) {
-                            int i0;
-                            double x_x = -1, y_y = -1;
-                            for (i0 = 0; i0 < lines.get(name).line().size(); i0++) {
-                                x_x = (double) lines.get(name).line().get(i0).first;
-                                y_y = (double) lines.get(name).line().get(i0).second;
-                                if (x_x >= x_d) break;
-                            }
-                            pw.print(name + " " + String.format("%.3f", x_x) + " " + String.format("%.3f", y_y) + " ");
-                        }
-                    }
-                    pw.println();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                double small = 0.004;
-                for (Pair<Double, Double> iter : List.of(
-                        new Pair<>(-small, small),
-                        new Pair<>(small, -small),
-                        new Pair<>(small, small),
-                        new Pair<>(-small, -small))
-                ) {
-                    series.getData().add(new XYChart.Data<>(
-                            ((double) lines.get(other).line().get(ind).first + iter.first),
-                            ((double) lines.get(other).line().get(ind).second + iter.second)
-                    ));
-                }
+            for (String lineName : bestNetClustLine.keySet()) {
+                assert bestNetClustLine.get(lineName).line().size() == 3;
+                XYChart.Series<Number, Number> series = getMarker(
+                        bestNetClustLine.get(lineName).line().get(1),
+                        0.005
+                );
+
+                series.setName(lineName + String.format(" (%.2f) ", bestNetClustLine.get(lineName).auc_roc()));
                 lineChart.getData().add(series);
-//                int ind = lines.get(name).threshold_index();
-//                XYChart.Series<Number, Number> series = new XYChart.Series<>();
-//                series.setName(String.format("cut = %.4f ", lines.get(name).threshold()));
-//                double small = 0.002;
-//                for (Pair<Double, Double> iter : List.of(
-//                        new Pair<>(-small, -small),
-//                        new Pair<>(-small, small),
-//                        new Pair<>(small, small),
-//                        new Pair<>(small, -small))
-//                ) {
-//                    series.getData().add(new XYChart.Data<>(
-//                            ((double) lines.get(name).line().get(ind).first + iter.first),
-//                            ((double) lines.get(name).line().get(ind).second + iter.second)
-//                    ));
-//                }
-//                lineChart.getData().add(series);
             }
 
-//            for (int c = 0; c < cnt_color; c++) {
-//                lineChart.lookup(".default-color" + c + ".chart-series-line").setStyle("-fx-stroke: " + colors[c] + ";");
-//                lineChart.lookup(".default-color" + c + ".chart-line-symbol").setStyle("-fx-background-color: " + colors[c] + ", white;");
-//            }
+            for (String lineName : otherNetClustLine.keySet()) {
+                assert otherNetClustLine.get(lineName).line().size() == 3;
+                XYChart.Series<Number, Number> series = getMarker(
+                        otherNetClustLine.get(lineName).line().get(1),
+                        0.003
+                );
+
+                series.setName(" ");
+                lineChart.getData().add(series);
+            }
 
             lineChart.setMinSize(900, 900);
             lineChart.setMaxSize(900, 900);
@@ -175,6 +138,24 @@ public class DrawAPI extends Application {
                     "./pictures/" + title.replaceAll("\\s", "_") + ".png"
             );
             stage.show();
+        }
+
+        private static XYChart.Series<Number, Number> getMarker(Pair<Number, Number> point, double small) {
+            XYChart.Series<Number, Number> series = new XYChart.Series<>();
+
+            for (Pair<Double, Double> iter : List.of(
+                    new Pair<>(-small, small),
+                    new Pair<>(small, -small),
+                    new Pair<>(small, small),
+                    new Pair<>(-small, -small))
+            ) {
+                series.getData().add(new XYChart.Data<>(
+                        ((double) point.first + iter.first),
+                        ((double) point.second + iter.second)
+                ));
+            }
+
+            return series;
         }
 
         private static NumberAxis extractAxis(Axis axisData) {

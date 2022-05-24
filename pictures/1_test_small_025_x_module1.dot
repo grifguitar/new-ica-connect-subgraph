@@ -1,7 +1,0 @@
-digraph 1_test_small_025_x {
-N_28 [shape = box, style = filled, fillcolor = "#964b00", label = "CREBBP(1387)\n2,220"];
-N_100 [shape = ellipse, style = filled, fillcolor = "#964b00", label = "PRKCD(5580)\n2,221"];
-N_145 [shape = box, style = filled, fillcolor = "#96ff00", label = "TIAM1(7074)\n6,068"];
-N_100 -> N_28 [ color = blue ];
-N_145 -> N_100 [ color = blue ];
-}
