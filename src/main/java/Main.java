@@ -20,15 +20,15 @@ import static analysis.DataAnalysis.whitening;
 import static drawing.DrawUtils.ANS_FILES_COUNT;
 
 public class Main {
-    private static final int TL = 300;
-    private static final boolean IS_MAIN = true;
-    private static final boolean IS_HEURISTIC = false;
+    private static final int TL = 30;
+    private static final boolean IS_MAIN = false;
+    private static final boolean IS_HEURISTIC = true;
     private static final String OUT_FOLDER = "./answers/";
     private static final String OUT_N = "./answers/p_ans_";
-    private static final String IN = "./real_data/";
+    private static final String IN = "./in_data/";
     private static final String LOGS = "./logs/";
-    private static final String FILENAME = "real_test_new";
-    private static final boolean REAL_DATA = true;
+    private static final String FILENAME = "2_test_small_05";
+    private static final boolean REAL_DATA = false;
 
     public static void main(String[] args) {
         try {
@@ -148,10 +148,10 @@ public class Main {
             MySolver solver;
             String newTitle;
             if (IS_MAIN) {
-                solver = new ConnectCallbackSolver(matrix, graph, TL, 1000, 0.001);
+                solver = new ConnectCallbackSolver(matrix, graph, TL, 10000, 0);
                 newTitle = "main_" + FILENAME;
             } else if (IS_HEURISTIC) {
-                solver = new SimpleCallbackSolver(matrix, graph, TL, 1000, 0.001);
+                solver = new SimpleCallbackSolver(matrix, graph, TL, 10000, 0);
                 newTitle = "heuristic_" + FILENAME;
             } else {
                 throw new RuntimeException("unsupported");
