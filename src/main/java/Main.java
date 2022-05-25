@@ -20,14 +20,15 @@ import static analysis.DataAnalysis.whitening;
 import static drawing.DrawUtils.ANS_FILES_COUNT;
 
 public class Main {
-    private static final int TL = 30;
+    private static final double INF = 1000;
+    private static final double STEP = 0.001;
+    private static final int TL = 50;
     private static final boolean IS_MAIN = true;
     private static final boolean IS_HEURISTIC = false;
     private static final String OUT_FOLDER = "./answers/";
-    private static final String OUT_N = "./answers/p_ans_";
     private static final String IN = "./in_data/";
     private static final String LOGS = "./logs/";
-    private static final String FILENAME = "2_test_small_05";
+    private static final String FILENAME = "1_test_small_025";
     private static final boolean REAL_DATA = false;
 
     public static void main(String[] args) {
@@ -101,9 +102,27 @@ public class Main {
                 out.println(ans.numCols());
             }
             for (int w = 0; w < ans.numCols(); w++) {
-                try (PrintWriter out = new PrintWriter(OUT_N + w + ".txt")) {
+                try (PrintWriter out = new PrintWriter("./answers/p_ans_" + w + ".txt")) {
                     for (int i = 0; i < ans.numRows(); i++) {
                         out.println(ans.getElem(i, w));
+                    }
+                }
+            }
+
+            // create FastICA answers file from .fast_ica
+
+            Map<String, Integer> namingMapFastICA = new HashMap<>();
+            Map<Integer, String> revNamingMapFastICA = new HashMap<>();
+
+            Matrix fast_ica = NewMatrixIO.read(IN + FILENAME + ".fast_ica", false, namingMapFastICA, revNamingMapFastICA);
+
+            try (PrintWriter out = new PrintWriter(OUT_FOLDER + "0_fast_ica_size.txt")) {
+                out.println(fast_ica.numCols());
+            }
+            for (int w = 0; w < fast_ica.numCols(); w++) {
+                try (PrintWriter out = new PrintWriter("./answers/ica_ans_" + w + ".txt")) {
+                    for (int i = 0; i < fast_ica.numRows(); i++) {
+                        out.println(String.format("%.10f", fast_ica.getElem(i, w)).replaceAll(",", "."));
                     }
                 }
             }
@@ -148,11 +167,11 @@ public class Main {
             MySolver solver;
             String newTitle;
             if (IS_MAIN) {
-                solver = new ConnectCallbackSolver(matrix, graph, TL, 10000, 0);
+                solver = new ConnectCallbackSolver(matrix, graph, TL, INF, STEP);
                 newTitle = "main_" + FILENAME;
             } else if (IS_HEURISTIC) {
-                solver = new SimpleCallbackSolver(matrix, graph, TL, 10000, 0);
-                newTitle = "heuristic_" + FILENAME;
+                //solver = new SimpleCallbackSolver(matrix, graph, TL, 10000, 0);
+                //newTitle = "heuristic_" + FILENAME;
             } else {
                 throw new RuntimeException("unsupported");
             }
@@ -178,6 +197,7 @@ public class Main {
             deleteAllFiles("./answers/");
 
         } catch (Exception e) {
+            deleteAllFiles("./answers/");
             throw new RuntimeException(e);
         }
     }

@@ -22,13 +22,30 @@ public class DrawUtils {
 
                 Double[] clust_size = readAsDoubleArray(folder + "0_clust_size.txt");
                 Double[] module_size = readAsDoubleArray(folder + "0_module_size.txt");
+                Double[] fast_ica_size = readAsDoubleArray(folder + "0_fast_ica_size.txt");
+
                 Double[] q = readAsDoubleArray(folder + "q.txt");
                 Double[] x = readAsDoubleArray(folder + "x.txt");
                 Double[] t = readAsDoubleArray(folder + "t.txt");
                 Double[] y = readAsDoubleArray(folder + "y.txt");
 
-//                Double[] ica_f = readAsDoubleArray(folder + "ica_f.txt");
-//                Double[] ica_g = readAsDoubleArray(folder + "ica_g.txt");
+                List<Double[]> fast_ica = new ArrayList<>();
+                for (int i = 0; i < fast_ica_size[0]; i++) {
+                    Double[] ica = readAsDoubleArray(folder + "ica_ans_" + i + ".txt");
+                    Double[] ica_f = new Double[ica.length];
+                    Double[] ica_g = new Double[ica.length];
+                    for (int j = 0; j < ica.length; j++) {
+                        if (ica[j] >= 0) {
+                            ica_f[j] = Math.abs(ica[j]);
+                            ica_g[j] = 0.0;
+                        } else {
+                            ica_f[j] = 0.0;
+                            ica_g[j] = Math.abs(ica[j]);
+                        }
+                    }
+                    fast_ica.add(ica_f);
+                    fast_ica.add(ica_g);
+                }
 
                 List<Double[]> clusters = new ArrayList<>();
                 for (int base_cnt = 0; base_cnt < ANS_FILES_COUNT; base_cnt++) {
@@ -38,8 +55,8 @@ public class DrawUtils {
                     }
                 }
 
-                int bestModule = -1;
-                double bestValue = -1;
+                List<Pair<Double, Integer>> theBest = new ArrayList<>();
+
                 Map<Integer, List<String>> results = new HashMap<>();
                 for (int modNum = 0; modNum < module_size[0]; modNum++) {
                     Boolean[] p = readAsBooleanArray(folder + "p_ans_" + modNum + ".txt");
@@ -101,7 +118,7 @@ public class DrawUtils {
                             throw new RuntimeException("unexpected");
                         }
 
-                        String str_nc = title + "_module_" + modNum + "_nc_" + base + ", best_f1score = " + best_f1score_clust.get(base_cnt);
+                        String str_nc = title + "_module_" + modNum + "_nc_" + base + "," + best_f1score_clust.get(base_cnt);
                         agg2.println(str_nc);
                         results.get(modNum).add(str_nc);
                         bestNetClustLine.put(best_lines_clust.get(base_cnt).first, best_lines_clust.get(base_cnt).second);
@@ -111,22 +128,16 @@ public class DrawUtils {
                         double[] m_y = calcMetrics(t, p, line_y.threshold().get(base_cnt));
                         if (m_x[2] > m_y[2]) {
                             agg1.println(title + "_module_" + modNum + "_x_" + base + ", metrics = " + Arrays.toString(m_x));
-                            String str_my = title + "_module_" + modNum + "_x_" + base + ", f1score = " + m_x[2];
+                            String str_my = title + "_module_" + modNum + "_x_" + base + "," + m_x[2];
                             agg2.println(str_my);
                             results.get(modNum).add(str_my);
-                            if (m_x[2] > bestValue) {
-                                bestValue = m_x[2];
-                                bestModule = modNum;
-                            }
+                            theBest.add(new Pair<>(m_x[2], modNum));
                         } else {
                             agg1.println(title + "_module_" + modNum + "_y_" + base + ", metrics = " + Arrays.toString(m_y));
-                            String str_my = title + "_module_" + modNum + "_y_" + base + ", f1score = " + m_y[2];
+                            String str_my = title + "_module_" + modNum + "_y_" + base + "," + m_y[2];
                             agg2.println(str_my);
                             results.get(modNum).add(str_my);
-                            if (m_y[2] > bestValue) {
-                                bestValue = m_y[2];
-                                bestModule = modNum;
-                            }
+                            theBest.add(new Pair<>(m_y[2], modNum));
                         }
                     }
                     if (ANS_FILES_COUNT == 0) {
@@ -134,27 +145,25 @@ public class DrawUtils {
                         double[] m_y = calcMetrics(t, p, line_y.threshold().get(line_y.threshold().size() - 1));
                         if (m_x[2] > m_y[2]) {
                             agg1.println(title + "_module_" + modNum + "_x_" + "nobase" + ", metrics = " + Arrays.toString(m_x));
-                            String str_my = title + "_module_" + modNum + "_x_" + "nobase" + ", f1score = " + m_x[2];
+                            String str_my = title + "_module_" + modNum + "_x_" + "nobase" + "," + m_x[2];
                             agg2.println(str_my);
                             results.get(modNum).add(str_my);
-                            if (m_x[2] > bestValue) {
-                                bestValue = m_x[2];
-                                bestModule = modNum;
-                            }
+                            theBest.add(new Pair<>(m_x[2], modNum));
                         } else {
                             agg1.println(title + "_module_" + modNum + "_y_" + "nobase" + ", metrics = " + Arrays.toString(m_y));
-                            String str_my = title + "_module_" + modNum + "_y_" + "nobase" + ", f1score = " + m_y[2];
+                            String str_my = title + "_module_" + modNum + "_y_" + "nobase" + "," + m_y[2];
                             agg2.println(str_my);
                             results.get(modNum).add(str_my);
-                            if (m_y[2] > bestValue) {
-                                bestValue = m_y[2];
-                                bestModule = modNum;
-                            }
+                            theBest.add(new Pair<>(m_y[2], modNum));
                         }
                     }
 
                     myLine.put("POSITIVE", line_x);
                     myLine.put("NEGATIVE", line_y);
+
+                    for (int i = 0; i < fast_ica.size(); i++) {
+                        myLine.put("ICA" + i, ROC.getLine(fast_ica.get(i), p, null));
+                    }
 
 //                    lines.put("z1", ROC.getLine(ica_f, p));
 //                    lines.put("z2", ROC.getLine(ica_g, p));
@@ -185,8 +194,19 @@ public class DrawUtils {
 
                 try (PrintWriter agg3 = new PrintWriter(new FileOutputStream("./aggregate/agg3.txt", true))) {
                     agg3.println("--------------------");
-                    for (String str : results.get(bestModule)) {
-                        agg3.println(str);
+                    theBest.sort(Comparator.comparing(p -> p.first));
+                    Collections.reverse(theBest);
+                    int countBest = 0;
+                    HashSet<Integer> st = new HashSet<>();
+                    for (Pair<Double, Integer> pair : theBest) {
+                        if (!st.contains(pair.second)) {
+                            st.add(pair.second);
+                            for (String str : results.get(pair.second)) {
+                                agg3.println(str);
+                            }
+                            countBest++;
+                        }
+                        if (countBest >= 2) break;
                     }
                 }
             }

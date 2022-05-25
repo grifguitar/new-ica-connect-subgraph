@@ -91,7 +91,7 @@ public class MST {
         Arrays.fill(x, 0);
 
         //check_mst_ordered(g, q, x, root, STEP, false);
-        //check_mst_ordered(g, q, x, root, STEP, true);
+        check_mst_ordered(g, q, x, root, STEP, true);
         check_mst_ordered(g, q, x, root, STEP, false);
     }
 
