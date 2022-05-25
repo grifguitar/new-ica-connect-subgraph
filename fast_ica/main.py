@@ -39,9 +39,9 @@ def solve():
     print(modules.shape)
 
 
-def draw(data1, data2, name1, name2):
+def draw(data1, data2, name1, name2, fullname):
     fig, (ax1, ax2) = plt.subplots(nrows=2, sharex='all')
-    fig.suptitle("11 tests with noise = 0.25")
+    fig.suptitle(fullname)
     plt.subplots_adjust(top=0.85, hspace=0.4)
     ax1.set_title(name1)
     ax1.boxplot(data1, vert=0)
@@ -86,9 +86,9 @@ def precalculate_data():
     data_my05 = np.array(data_my05)
     print(data_nc05.shape, " ", data_my05.shape)
 
-    draw(data_nc025, data_my025, 'NetClust:0.25', 'MIQP-ICA')
-    draw(data_nc04, data_my04, 'NetClust:0.4', 'MIQP-ICA')
-    draw(data_nc05, data_my05, 'NetClust:0.5', 'MIQP-ICA')
+    draw(data_nc025, data_my025, 'NetClust:0.25', 'MIQP-ICA', 'F1-score, noise 025, average 2 modules by 11 tests')
+    draw(data_nc04, data_my04, 'NetClust:0.4', 'MIQP-ICA', 'F1-score, noise 025, average 2 modules by 11 tests')
+    draw(data_nc05, data_my05, 'NetClust:0.5', 'MIQP-ICA', 'F1-score, noise 025, average 2 modules by 11 tests')
 
 
 if __name__ == '__main__':
