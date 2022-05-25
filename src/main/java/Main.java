@@ -139,39 +139,39 @@ public class Main {
 
             // solve
 
-//            ConnectCallbackSolver solver = new ConnectCallbackSolver(matrix, graph, 1000);
-//
-//            if (solver.solve()) {
-//                try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
-//                    try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
-//                        try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
-//                            try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
-//                                solver.writeVarsToFiles(out_q, out_x, out_t, out_y);
-//                            }
-//                        }
-//                    }
-//                }
-//            } else {
-//                System.out.println("ConnectCallbackSolver: integer results not found!");
-//            }
-//
-//            solver.close();
+            ConnectCallbackSolver solver = new ConnectCallbackSolver(matrix, graph, 300);
 
-            SimpleCallbackSolver simpleCallbackSolver = new SimpleCallbackSolver(matrix, graph, 150);
-
-            if (simpleCallbackSolver.solve()) {
+            if (solver.solve()) {
                 try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
                     try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
                         try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
                             try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
-                                simpleCallbackSolver.writeVarsToFiles(out_q, out_x, out_t, out_y);
+                                solver.writeVarsToFiles(out_q, out_x, out_t, out_y);
                             }
                         }
                     }
                 }
+            } else {
+                System.out.println("ConnectCallbackSolver: integer results not found!");
             }
 
-            simpleCallbackSolver.close();
+            solver.close();
+
+//            SimpleCallbackSolver simpleCallbackSolver = new SimpleCallbackSolver(matrix, graph, 150);
+//
+//            if (simpleCallbackSolver.solve()) {
+//                try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
+//                    try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
+//                        try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
+//                            try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
+//                                simpleCallbackSolver.writeVarsToFiles(out_q, out_x, out_t, out_y);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            simpleCallbackSolver.close();
 
             DrawUtils.newDraw("./answers/", FILENAME, graph);
 

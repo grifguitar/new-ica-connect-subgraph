@@ -1,0 +1,29 @@
+digraph real_test_new_y {
+N_258 [shape = box, style = filled, fillcolor = "#969700", label = "RPA1\n3.492"];
+N_528 [shape = box, style = filled, fillcolor = "#964c00", label = "CDK2\n3.148"];
+N_538 [shape = box, style = filled, fillcolor = "#964c00", label = "CCNE2\n3.147"];
+N_583 [shape = box, style = filled, fillcolor = "#969700", label = "CDC7\n3.490"];
+N_585 [shape = box, style = filled, fillcolor = "#969700", label = "CDC45\n3.490"];
+N_587 [shape = box, style = filled, fillcolor = "#964b00", label = "MCM2\n3.144"];
+N_590 [shape = box, style = filled, fillcolor = "#964c00", label = "CDC6\n3.146"];
+N_593 [shape = box, style = filled, fillcolor = "#96ff00", label = "MCM10\n6.435"];
+N_770 [shape = box, style = filled, fillcolor = "#969700", label = "POLA1\n3.491"];
+N_771 [shape = box, style = filled, fillcolor = "#969700", label = "POLA2\n3.490"];
+N_773 [shape = box, style = filled, fillcolor = "#969700", label = "POLE2\n3.490"];
+N_994 [shape = box, style = filled, fillcolor = "#964b00", label = "GINS2\n3.143"];
+N_1460 [shape = box, style = filled, fillcolor = "#964c00", label = "ORC3\n3.145"];
+N_2247 [shape = box, style = filled, fillcolor = "#964d00", label = "CLSPN\n3.149"];
+N_258 -> N_583 [ color = blue ];
+N_258 -> N_585 [ color = blue ];
+N_593 -> N_258 [ color = blue ];
+N_258 -> N_770 [ color = blue ];
+N_258 -> N_771 [ color = blue ];
+N_528 -> N_538 [ color = blue ];
+N_2247 -> N_528 [ color = blue ];
+N_538 -> N_590 [ color = blue ];
+N_587 -> N_994 [ color = blue ];
+N_1460 -> N_587 [ color = blue ];
+N_590 -> N_1460 [ color = blue ];
+N_593 -> N_2247 [ color = blue ];
+N_770 -> N_773 [ color = blue ];
+}
