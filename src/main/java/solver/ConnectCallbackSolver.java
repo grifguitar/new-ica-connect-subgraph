@@ -62,7 +62,7 @@ public class ConnectCallbackSolver implements MySolver {
 
     // variables:
 
-    private final float INF;
+    private final double INF;
     private final double STEP;
 
     private final PrintWriter log;
@@ -82,7 +82,7 @@ public class ConnectCallbackSolver implements MySolver {
 
     // constructor:
 
-    public ConnectCallbackSolver(Matrix matrix, Graph graph, int TIME_LIMIT, float INF, double STEP) throws IloException, IOException {
+    public ConnectCallbackSolver(Matrix matrix, Graph graph, int TIME_LIMIT, double INF, double STEP) throws IloException, IOException {
         this.INF = INF;
         this.STEP = STEP;
 

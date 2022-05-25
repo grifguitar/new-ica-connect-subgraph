@@ -21,8 +21,8 @@ import static drawing.DrawUtils.ANS_FILES_COUNT;
 
 public class Main {
     private static final int TL = 30;
-    private static final boolean IS_MAIN = false;
-    private static final boolean IS_HEURISTIC = true;
+    private static final boolean IS_MAIN = true;
+    private static final boolean IS_HEURISTIC = false;
     private static final String OUT_FOLDER = "./answers/";
     private static final String OUT_N = "./answers/p_ans_";
     private static final String IN = "./in_data/";
