@@ -4,6 +4,7 @@ import graph.Graph;
 import io.GraphIO;
 import io.NewMatrixIO;
 import solver.ConnectCallbackSolver;
+import solver.MySolver;
 import solver.SimpleCallbackSolver;
 import utils.Matrix;
 import utils.Pair;
@@ -15,13 +16,18 @@ import java.util.stream.Collectors;
 
 import static analysis.DataAnalysis.whitening;
 
+// attention:
+import static drawing.DrawUtils.ANS_FILES_COUNT;
+
 public class Main {
+    private static final int TL = 300;
+    private static final boolean IS_MAIN = true;
+    private static final boolean IS_HEURISTIC = false;
     private static final String OUT_FOLDER = "./answers/";
     private static final String OUT_N = "./answers/p_ans_";
     private static final String IN = "./real_data/";
     private static final String LOGS = "./logs/";
     private static final String FILENAME = "real_test_new";
-    private static final int ANS_FILES_COUNT = 0;
     private static final boolean REAL_DATA = true;
 
     public static void main(String[] args) {
@@ -139,7 +145,17 @@ public class Main {
 
             // solve
 
-            ConnectCallbackSolver solver = new ConnectCallbackSolver(matrix, graph, 300);
+            MySolver solver;
+            String newTitle;
+            if (IS_MAIN) {
+                solver = new ConnectCallbackSolver(matrix, graph, TL, 1000, 0.001);
+                newTitle = "main_" + FILENAME;
+            } else if (IS_HEURISTIC) {
+                solver = new SimpleCallbackSolver(matrix, graph, TL, 1000, 0.001);
+                newTitle = "heuristic_" + FILENAME;
+            } else {
+                throw new RuntimeException("unsupported");
+            }
 
             if (solver.solve()) {
                 try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
@@ -151,31 +167,11 @@ public class Main {
                         }
                     }
                 }
-            } else {
-                System.out.println("ConnectCallbackSolver: integer results not found!");
             }
 
             solver.close();
 
-//            SimpleCallbackSolver simpleCallbackSolver = new SimpleCallbackSolver(matrix, graph, 150);
-//
-//            if (simpleCallbackSolver.solve()) {
-//                try (PrintWriter out_q = new PrintWriter("./answers/q.txt")) {
-//                    try (PrintWriter out_x = new PrintWriter("./answers/x.txt")) {
-//                        try (PrintWriter out_t = new PrintWriter("./answers/t.txt")) {
-//                            try (PrintWriter out_y = new PrintWriter("./answers/y.txt")) {
-//                                simpleCallbackSolver.writeVarsToFiles(out_q, out_x, out_t, out_y);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            simpleCallbackSolver.close();
-
-            DrawUtils.newDraw("./answers/", FILENAME, graph);
-
-            //DrawUtils.compareNetClustWithTrueAns("./answers/", "net_clust");
+            DrawUtils.newDraw("./answers/", newTitle, graph);
 
             DrawAPI.run();
 

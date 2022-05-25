@@ -7,13 +7,12 @@ import ilog.cplex.*;
 import utils.Matrix;
 import utils.Pair;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class SimpleCallbackSolver implements Closeable {
+public class SimpleCallbackSolver implements MySolver {
     @Override
     public void close() {
         log.close();
@@ -41,11 +40,10 @@ public class SimpleCallbackSolver implements Closeable {
         }
     }
 
-    // constants:
-
-    private final static float INF = 10000;
-
     // variables:
+
+    private final double INF;
+    private final double STEP;
 
     private final PrintWriter log;
 
@@ -65,7 +63,10 @@ public class SimpleCallbackSolver implements Closeable {
 
     // constructor:
 
-    public SimpleCallbackSolver(Matrix matrix, Graph graph, int TIME_LIMIT) throws IloException, IOException {
+    public SimpleCallbackSolver(Matrix matrix, Graph graph, int TIME_LIMIT, double INF, double STEP) throws IloException, IOException {
+        this.INF = INF;
+        this.STEP = STEP;
+
         this.log = new PrintWriter("./logs/simple_callback_solver.txt", StandardCharsets.UTF_8);
 
         this.matrix = matrix;
@@ -234,13 +235,9 @@ public class SimpleCallbackSolver implements Closeable {
                 throw new RuntimeException("unexpected l1norm after adapt");
             }
 
-            for (int i = 0; i < f.length; i++) {
-                q[i] = f[i];
-            }
+            System.arraycopy(f, 0, q, 0, f.length);
 
-            for (int i = 0; i < g.length; i++) {
-                t[i] = g[i];
-            }
+            System.arraycopy(g, 0, t, 0, g.length);
 
             for (int i = 0; i < graph.getEdges().size(); i++) {
                 Pair<Integer, Integer> edge = graph.getEdges().get(i);
@@ -252,9 +249,9 @@ public class SimpleCallbackSolver implements Closeable {
                 y[i] = t[edge.first] + t[edge.second];
             }
 
-            MST.solve(graph, x, q, r, 0);
+            MST.solve(graph, x, q, r, STEP);
 
-            MST.solve(graph, y, t, s, 0);
+            MST.solve(graph, y, t, s, STEP);
 
             return true;
         }
@@ -345,7 +342,6 @@ public class SimpleCallbackSolver implements Closeable {
                             out_y.println(sol.y[i]);
                         }
                     }
-                    //DrawUtils.newDraw("./answers/", "tmp_ans" + cnt_ans, graph);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -363,7 +359,6 @@ public class SimpleCallbackSolver implements Closeable {
                 for (double z : sol.beta) vals[ind_var++] = z;
 
                 if (calcObj >= getIncumbentObjValue()) {
-                    //System.out.println("found new solution: " + calcObj);
                     setSolution(v.allVars, vals);
                 }
 
@@ -403,5 +398,4 @@ public class SimpleCallbackSolver implements Closeable {
     private static String varNameOf(String arg1, int arg2) {
         return arg1 + arg2;
     }
-
 }
