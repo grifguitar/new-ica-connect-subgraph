@@ -24,8 +24,8 @@ def data_read(filename, out_x, out_y):
 
 
 def solve():
-    folder = '../in_data/'
-    test_name = '6_test_small_1'
+    folder = '../real_data/'
+    test_name = 'real_test_new'
     out_file = folder + test_name + '.fast_ica'
 
     mtx = data_read(folder + test_name + '.mtx', 'mtx.txt', 'mtx_labels.txt')
@@ -92,5 +92,5 @@ def precalculate_data():
 
 
 if __name__ == '__main__':
-    # solve()
-    precalculate_data()
+    solve()
+    # precalculate_data()
