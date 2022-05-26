@@ -17,7 +17,7 @@ public class DataAnalysis {
     /**
      * private constants
      */
-    private static final int PCA_COMPONENTS_NUM = 2;
+    private static final int PCA_COMPONENTS_NUM = 3;
     private static final double EPS = 1e-6;
     private static final String F_DEBUG = "./logs/data_analysis_debug.txt";
     private static final String F_OUT = "./logs/data_analysis_out.txt";
