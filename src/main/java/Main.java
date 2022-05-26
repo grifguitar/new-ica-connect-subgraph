@@ -21,7 +21,7 @@ import static drawing.DrawUtils.ANS_FILES_COUNT;
 
 public class Main {
     private static final double INF = 10000;
-    private static final double STEP = 0.001;
+    private static final double STEP = 0;
     private static final int TL = 1000;
     private static final boolean IS_MAIN = true;
     private static final boolean IS_HEURISTIC = false;
