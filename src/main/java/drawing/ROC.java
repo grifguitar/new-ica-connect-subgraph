@@ -72,7 +72,7 @@ public class ROC {
             x += stepX * b;
             points.add(new Pair<>(x, y));
 
-            if (x >= 0.01 && threshold_index == -1) {
+            if (x >= 0.03 && threshold_index == -1) {
                 threshold_index = points.size() - 1;
                 threshold = list.get(threshold_index).first;
             }
