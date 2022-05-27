@@ -354,6 +354,16 @@ public class ConnectCallbackSolver implements MySolver {
 
             System.arraycopy(g, 0, t, 0, g.length);
 
+//            for (int i = 0; i < graph.getEdges().size(); i++) {
+//                Pair<Integer, Integer> edge = graph.getEdges().get(i);
+//                x[i] = x[i] + q[edge.first] + q[edge.second];
+//            }
+//
+//            for (int i = 0; i < graph.getEdges().size(); i++) {
+//                Pair<Integer, Integer> edge = graph.getEdges().get(i);
+//                y[i] = y[i] + t[edge.first] + t[edge.second];
+//            }
+
             MST.solve(graph, x, q, r, STEP);
 
             MST.solve(graph, y, t, s, STEP);

@@ -28,7 +28,7 @@ public class Main {
     private static final String OUT_FOLDER = "./answers/";
     private static final String IN = "./agg_025/";
     private static final String LOGS = "./logs/";
-    private static final String FILENAME = "a5_test_025";
+    private static final String FILENAME = "a1_test_025";
     private static final boolean REAL_DATA = false;
 
     public static void main(String[] args) {

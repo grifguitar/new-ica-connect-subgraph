@@ -4,6 +4,8 @@ import graph.Graph;
 import utils.Pair;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -94,7 +96,8 @@ public class DrawUtils {
                             ROC.ROCLine line = ROC.getLine(n, p, null);
                             double[] metrics = calcMetrics(n, p, 1 - EPS);
                             if (metrics[2] > best_f1score_clust.get(base_cnt)) {
-                                best_f1score_clust.set(base_cnt, metrics[2]);
+                                double val = BigDecimal.valueOf(metrics[2]).setScale(4, RoundingMode.HALF_DOWN).doubleValue();
+                                best_f1score_clust.set(base_cnt, val);
                                 best_tpfp_clust.set(base_cnt, (int) Math.round(metrics[3]));
                                 best_lines_clust.set(base_cnt, new Pair<>("NC_" + base + "_" + clustNum, line));
                             }
@@ -105,6 +108,19 @@ public class DrawUtils {
 
                     ROC.ROCLine line_x = ROC.getLine(q, p, best_tpfp_clust);
                     ROC.ROCLine line_y = ROC.getLine(t, p, best_tpfp_clust);
+
+                    myLine.put("POSITIVE", line_x);
+                    myLine.put("NEGATIVE", line_y);
+
+                    double max_ica_auc_roc = 0;
+                    for (int i = 0; i < fast_ica.size(); i++) {
+                        ROC.ROCLine ica_line = ROC.getLine(fast_ica.get(i), p, null);
+                        myLine.put("ICA" + i, ica_line);
+                        if (max_ica_auc_roc < ica_line.auc_roc()) {
+                            max_ica_auc_roc = ica_line.auc_roc();
+                        }
+                    }
+                    max_ica_auc_roc = BigDecimal.valueOf(max_ica_auc_roc).setScale(4, RoundingMode.HALF_UP).doubleValue();
 
                     for (int base_cnt = 0; base_cnt < ANS_FILES_COUNT; base_cnt++) {
                         String base;
@@ -126,15 +142,19 @@ public class DrawUtils {
 
                         double[] m_x = calcMetrics(q, p, line_x.threshold().get(base_cnt));
                         double[] m_y = calcMetrics(t, p, line_y.threshold().get(base_cnt));
-                        if (m_x[2] > m_y[2]) {
+                        double val_x = BigDecimal.valueOf(m_x[2]).setScale(4, RoundingMode.HALF_UP).doubleValue();
+                        double val_y = BigDecimal.valueOf(m_y[2]).setScale(4, RoundingMode.HALF_UP).doubleValue();
+                        double auc_x = BigDecimal.valueOf(line_x.auc_roc()).setScale(4, RoundingMode.HALF_UP).doubleValue();
+                        double auc_y = BigDecimal.valueOf(line_y.auc_roc()).setScale(4, RoundingMode.HALF_UP).doubleValue();
+                        if (val_x > val_y) {
                             agg1.println(title + "_module_" + modNum + "_x_" + base + ", metrics = " + Arrays.toString(m_x));
-                            String str_my = title + "_module_" + modNum + "_x_" + base + "," + m_x[2];
+                            String str_my = title + "_module_" + modNum + "_x_" + base + "," + val_x + "," + auc_x + "," + max_ica_auc_roc;
                             agg2.println(str_my);
                             results.get(modNum).add(str_my);
                             theBest.add(new Pair<>(m_x[2], modNum));
                         } else {
                             agg1.println(title + "_module_" + modNum + "_y_" + base + ", metrics = " + Arrays.toString(m_y));
-                            String str_my = title + "_module_" + modNum + "_y_" + base + "," + m_y[2];
+                            String str_my = title + "_module_" + modNum + "_y_" + base + "," + val_y + "," + auc_y + "," + max_ica_auc_roc;
                             agg2.println(str_my);
                             results.get(modNum).add(str_my);
                             theBest.add(new Pair<>(m_y[2], modNum));
@@ -145,28 +165,18 @@ public class DrawUtils {
                         double[] m_y = calcMetrics(t, p, line_y.threshold().get(line_y.threshold().size() - 1));
                         if (m_x[2] > m_y[2]) {
                             agg1.println(title + "_module_" + modNum + "_x_" + "nobase" + ", metrics = " + Arrays.toString(m_x));
-                            String str_my = title + "_module_" + modNum + "_x_" + "nobase" + "," + m_x[2];
+                            String str_my = title + "_module_" + modNum + "_x_" + "nobase" + "," + m_x[2] + "," + line_x.auc_roc() + "," + max_ica_auc_roc;
                             agg2.println(str_my);
                             results.get(modNum).add(str_my);
                             theBest.add(new Pair<>(m_x[2], modNum));
                         } else {
                             agg1.println(title + "_module_" + modNum + "_y_" + "nobase" + ", metrics = " + Arrays.toString(m_y));
-                            String str_my = title + "_module_" + modNum + "_y_" + "nobase" + "," + m_y[2];
+                            String str_my = title + "_module_" + modNum + "_y_" + "nobase" + "," + m_y[2] + "," + line_y.auc_roc() + "," + max_ica_auc_roc;
                             agg2.println(str_my);
                             results.get(modNum).add(str_my);
                             theBest.add(new Pair<>(m_y[2], modNum));
                         }
                     }
-
-                    myLine.put("POSITIVE", line_x);
-                    myLine.put("NEGATIVE", line_y);
-
-                    for (int i = 0; i < fast_ica.size(); i++) {
-                        myLine.put("ICA" + i, ROC.getLine(fast_ica.get(i), p, null));
-                    }
-
-//                    lines.put("z1", ROC.getLine(ica_f, p));
-//                    lines.put("z2", ROC.getLine(ica_g, p));
 
 //                    graph.saveAsDOT(
 //                            "./pictures/",
