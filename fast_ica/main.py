@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 
 from sklearn.decomposition import FastICA
 
+from scipy.stats import wilcoxon
+
 
 def data_read(filename, out_x, out_y):
     x = list(list())
@@ -90,7 +92,13 @@ def precalculate_data():
     draw(data_nc04, data_my04, 'NetClust:0.4', 'MIQP-ICA', 'F1-score, noise 025, average 2 modules by 11 tests')
     draw(data_nc05, data_my05, 'NetClust:0.5', 'MIQP-ICA', 'F1-score, noise 025, average 2 modules by 11 tests')
 
+    print('0.25', wilcoxon(data_nc025, data_my025))
+
+    print('0.4', wilcoxon(data_nc04, data_my04))
+
+    print('0.5', wilcoxon(data_nc05, data_my05))
+
 
 if __name__ == '__main__':
-    solve()
-    # precalculate_data()
+    # solve()
+    precalculate_data()
