@@ -350,13 +350,9 @@ public class ConnectCallbackSolver implements MySolver {
                 throw new RuntimeException("unexpected l1norm after adapt");
             }
 
-            for (int i = 0; i < f.length; i++) {
-                q[i] = f[i];
-            }
+            System.arraycopy(f, 0, q, 0, f.length);
 
-            for (int i = 0; i < g.length; i++) {
-                t[i] = g[i];
-            }
+            System.arraycopy(g, 0, t, 0, g.length);
 
             MST.solve(graph, x, q, r, STEP);
 

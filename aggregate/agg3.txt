@@ -1,8 +1,0 @@
---------------------
-main_real_test_new_module_0_y_nobase,0.08264462809917356
---------------------
-main_real_test_new_module_0_y_nobase,0.11214953271028037
---------------------
-main_real_test_new_module_0_y_nobase,0.2857142857142857
---------------------
-main_real_test_new_module_0_y_nobase,0.2891566265060241

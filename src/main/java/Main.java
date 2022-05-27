@@ -20,16 +20,16 @@ import static analysis.DataAnalysis.whitening;
 import static drawing.DrawUtils.ANS_FILES_COUNT;
 
 public class Main {
-    private static final double INF = 10000;
-    private static final double STEP = 0;
-    private static final int TL = 1000;
+    private static final double INF = 1000;
+    private static final double STEP = 0.001;
+    private static final int TL = 50;
     private static final boolean IS_MAIN = true;
     private static final boolean IS_HEURISTIC = false;
     private static final String OUT_FOLDER = "./answers/";
-    private static final String IN = "./real_data/";
+    private static final String IN = "./agg_025/";
     private static final String LOGS = "./logs/";
-    private static final String FILENAME = "real_test_new";
-    private static final boolean REAL_DATA = true;
+    private static final String FILENAME = "a5_test_025";
+    private static final boolean REAL_DATA = false;
 
     public static void main(String[] args) {
         try {

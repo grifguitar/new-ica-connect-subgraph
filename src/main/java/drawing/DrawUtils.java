@@ -12,7 +12,7 @@ import java.util.*;
  */
 public class DrawUtils {
     private static final double EPS = 1e-6;
-    public static final int ANS_FILES_COUNT = 0;
+    public static final int ANS_FILES_COUNT = 3;
 
     public static void newDraw(String folder, String title, Graph graph) {
         try (PrintWriter agg1 = new PrintWriter(new FileOutputStream("./aggregate/agg1.txt", true))) {
@@ -168,24 +168,24 @@ public class DrawUtils {
 //                    lines.put("z1", ROC.getLine(ica_f, p));
 //                    lines.put("z2", ROC.getLine(ica_g, p));
 
-                    graph.saveAsDOT(
-                            "./pictures/",
-                            title + "_x",
-                            x,
-                            q,
-                            new Pair<>(line_x.threshold().get(line_x.threshold().size() - 1), p),
-                            modNum,
-                            false
-                    );
-                    graph.saveAsDOT(
-                            "./pictures/",
-                            title + "_y",
-                            y,
-                            t,
-                            new Pair<>(line_y.threshold().get(line_y.threshold().size() - 1), p),
-                            modNum,
-                            false
-                    );
+//                    graph.saveAsDOT(
+//                            "./pictures/",
+//                            title + "_x",
+//                            x,
+//                            q,
+//                            new Pair<>(line_x.threshold().get(line_x.threshold().size() - 1), p),
+//                            modNum,
+//                            false
+//                    );
+//                    graph.saveAsDOT(
+//                            "./pictures/",
+//                            title + "_y",
+//                            y,
+//                            t,
+//                            new Pair<>(line_y.threshold().get(line_y.threshold().size() - 1), p),
+//                            modNum,
+//                            false
+//                    );
 
                     ROC.draw(title + "_module_" + modNum, myLine, bestNetClustLine, otherNetClustLine);
                 }
