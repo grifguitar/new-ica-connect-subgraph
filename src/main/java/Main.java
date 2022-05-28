@@ -26,9 +26,9 @@ public class Main {
     private static final boolean IS_MAIN = true;
     private static final boolean IS_HEURISTIC = false;
     private static final String OUT_FOLDER = "./answers/";
-    private static final String IN = "./agg_1/";
+    private static final String IN = "./agg_05/";
     private static final String LOGS = "./logs/";
-    private static final String FILENAME = "a20_test_1";
+    private static final String FILENAME = "a1_test_05";
     private static final boolean REAL_DATA = false;
 
     public static void main(String[] args) {

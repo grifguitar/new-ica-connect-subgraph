@@ -27,8 +27,8 @@ def data_read(filename, out_x, out_y):
 
 def solve():
     for i in range(40):
-        folder = '../agg_1/'
-        test_name = 'a' + str(i + 1) + '_test_1'
+        folder = '../agg_05/'
+        test_name = 'a' + str(i + 1) + '_test_05'
         out_file = folder + test_name + '.fast_ica'
 
         mtx = data_read(folder + test_name + '.mtx', 'mtx.txt', 'mtx_labels.txt')
@@ -53,7 +53,7 @@ def precalculate_data():
     roc_my = list()
     roc_fast_ica = list()
 
-    with open('../_answers_/aggregate_1_20.txt', 'r') as csvfile:
+    with open('../_answers_/aggregate_05_20.txt', 'r') as csvfile:
         rows = csv.reader(csvfile, delimiter=',')
         for row in rows:
             if row[0].find('nc_0.25') != -1:
@@ -104,19 +104,19 @@ def precalculate_data():
     }
 
     fig, ax = plt.subplots()
-    fig.suptitle('F1-score, noise 1, average 2 modules by 20 tests')
+    fig.suptitle('F1-score, noise 0.5, average 2 modules by 20 tests')
     fig.set_size_inches(9, 5)
     ax.boxplot(my_dict1.values(), vert=0)
     ax.set_yticklabels(my_dict1.keys())
-    plt.savefig('../_answers_/picture_noise_1_f1score.png')
+    plt.savefig('../_answers_/picture_noise_05_f1score.png')
     plt.show()
 
     fig, ax = plt.subplots()
-    fig.suptitle('AUC ROC, noise 1, average 2 modules by 20 tests')
+    fig.suptitle('AUC ROC, noise 0.5, average 2 modules by 20 tests')
     fig.set_size_inches(9, 5)
     ax.boxplot(my_dict2.values(), vert=0)
     ax.set_yticklabels(my_dict2.keys())
-    plt.savefig('../_answers_/picture_noise_1_auc_roc.png')
+    plt.savefig('../_answers_/picture_noise_05_auc_roc.png')
     plt.show()
 
     print('0.25', wilcoxon(data_nc025, data_my025))
