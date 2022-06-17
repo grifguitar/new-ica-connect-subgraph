@@ -14,7 +14,7 @@ import java.util.*;
  */
 public class DrawUtils {
     private static final double EPS = 1e-6;
-    public static final int ANS_FILES_COUNT = 0;
+    public static final int ANS_FILES_COUNT = 3;
 
     public static void newDraw(String folder, String title, Graph graph) {
         try (PrintWriter agg1 = new PrintWriter(new FileOutputStream("./aggregate/agg1.txt", true))) {

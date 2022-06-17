@@ -23,13 +23,13 @@ public class Main {
         this.FILENAME = FILENAME;
     }
 
-    private static final double INF = 10000;
+    private static final double INF = 1000;
     private static final double STEP = 0.001;
-    private static final int TL = 300;
+    private static final int TL = 50;
     private static final boolean IS_MAIN = true;
     private static final boolean IS_HEURISTIC = false;
     private static final String OUT_FOLDER = "./answers/";
-    private static final String IN = "./agg_big_05/";
+    private static final String IN = "./input/";
     private static final String LOGS = "./logs/";
     private final String FILENAME;
     private static final boolean REAL_DATA = false;
